@@ -79,6 +79,12 @@ class mainwp_spinner {
 
         add_filter('mce_external_plugins', array(&$this, 'mce_plugin'));
         add_filter('mce_buttons', array(&$this, 'mce_button'));
+        
+        // add this action to support spin dripper
+        add_action('mainwp_dripper_update_post_meta', array(&$this, 'spinner_update_post_meta'), 10, 2);
+        // add this action to support spin boilerplate
+        add_action('mainwp_boilerplate_update_post_meta', array(&$this, 'spinner_update_post_meta'), 10, 2);
+        
         /* add_filter('tiny_mce_before_init', array(&$this, 'mce_setting')); */
 		
 		/* Remove filter outside MainWP system 
@@ -99,6 +105,14 @@ class mainwp_spinner {
             return $plugin_meta;
         }
 
+    function spinner_update_post_meta($post, $post_type) {
+        if (!$post)
+            return;        
+        if ($post->post_type == $post_type) {
+            update_post_meta($post->ID, '_mainwp_spin_me', 'yes');  
+        }        
+    }
+    
     public function option_page() {
         include $this->plugin_dir . '/includes/option_page.php';
     }
@@ -596,10 +610,14 @@ class mainwp_spinner {
     }
     
     public function filter_bulkpost_data($post_data) {
-       $new_post = unserialize(base64_decode($post_data['new_post']));         
-        if (is_array($new_post) && isset($new_post['id_spin']) && intval($new_post['id_spin']) > 0)   {            
-//          $new_post['post_title'] = $this->filter_title($new_post['post_title'], intval($new_post['id_spin']), true);
-//          $new_post['post_content'] = $this->filter_content($new_post['post_content'], intval($new_post['id_spin']), true);
+       $new_post = unserialize(base64_decode($post_data['new_post']));
+       
+       $spin_me = "";
+       if (is_array($new_post) && isset($new_post['mainwp_post_id']) && $pid = $new_post['mainwp_post_id']) {
+           $spin_me = get_post_meta($pid, '_mainwp_spin_me', true);
+       }
+       
+        if (is_array($new_post) && ((isset($new_post['id_spin']) && intval($new_post['id_spin']) > 0) || $spin_me === "yes"))   {            
             $new_post['post_title'] = $this->parse_spin_text($new_post['post_title']);
             $new_post['post_content'] = $this->parse_spin_text($new_post['post_content']);
             $post_data['new_post'] = base64_encode(serialize($new_post));
