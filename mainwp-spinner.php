@@ -3,7 +3,7 @@
   Plugin Name: MainWP Spinner
   Plugin URI:
   Description: MainWP Extension Plugin allows words to spun {|} when when adding articles and posts to your blogs. Requires the installation of MainWP Main Plugin.
-  Version: 1.8.4
+  Version: 1.8.5
   Author: MainWP
   Author URI: http://extensions.mainwp.com
   Icon URI: http://extensions.mainwp.com/wp-content/uploads/2013/06/spinner-300x300.png
@@ -653,15 +653,19 @@ class mainwp_spinner {
             { 
                  $d = (array)$d;
             }		
-            $to_match = preg_replace('/([}{|\/])/is', '\\\$1', $d['match']);      
-            if ($random) {
-                $match = str_replace(array("{", "}", "\\"), "", $to_match);                                
-                $syn = explode('|', $match);
-                $spin = $syn[array_rand($syn)];                                 
-                $spin_text = preg_replace('/'.$to_match.'/is', $spin, $spin_text, 1);
+            if (isset($d['match'])) {
+                $to_match = preg_replace('/([}{|\/])/is', '\\\$1', $d['match']);      
+                if ($random) {
+                    $match = str_replace(array("{", "}", "\\"), "", $to_match);                                
+                    $syn = explode('|', $match);
+                    $spin = $syn[array_rand($syn)];                                 
+                    $spin_text = preg_replace('/'.$to_match.'/is', $spin, $spin_text, 1);
+                }
+                else {               
+                    if (isset($d['replace']))
+                        $spin_text = preg_replace('/' . $to_match . '/is', $d['replace'], $spin_text, 1);          
+                }
             }
-            else                
-                $spin_text = preg_replace('/' . $to_match . '/is', $d['replace'], $spin_text, 1);          
         }
         return $spin_text;
     }
