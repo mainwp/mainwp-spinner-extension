@@ -72,7 +72,7 @@ class mainwp_spinner {
         add_meta_box('mainwpspin', __("MainWP Spinner Options"), array(&$this, 'metabox'), 'bulkpage', 'normal', 'high');
 
         //add_action('post_submitbox_misc_actions', array(&$this, 'submitbox'));        
-        add_action('save_post', array(&$this, 'save_post'));
+        add_action('save_post', array(&$this, 'save_post'), 9);
         add_action('wp_ajax_spin_post', array(&$this, 'spin_post'));
         add_action('wp_ajax_spin_text', array(&$this, 'single_spin_text'));
         add_action('wp_ajax_test_spin', array(&$this, 'test_spin'));
@@ -235,8 +235,9 @@ class mainwp_spinner {
         if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE)
             return $post_id;
         if (!current_user_can('edit_post', $post_id))
-            return $post_id;
-        update_post_meta($post_id, '_ezine_post_sp_spin_title', intval($_POST['post_sp_spin_title']));
+            return $post_id; 
+        update_post_meta($post_id, '_saved_spin_post_option', 'yes');        
+        update_post_meta($post_id, '_ezine_post_sp_spin_title', intval($_POST['post_sp_spin_title']));        
         if ($_POST['sp_spinner'] == 'bs') {
             update_post_meta($post_id, '_ezine_post_bs_max_synonyms', intval($_POST['post_bs_max_synonyms']));
             update_post_meta($post_id, '_ezine_post_bs_quality', intval($_POST['post_bs_quality']));
