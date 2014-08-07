@@ -757,9 +757,12 @@ class MainWPSpinSpinFailed_Exception extends Exception {
     }
 }
 
+register_activation_hook(__FILE__, 'mainwp_spin_extension_activate');
+function mainwp_spin_extension_activate()
+{   
+    update_option('mainwp_spin_extension_activated', 'yes');
+}
 
-if (!defined('ABSPATH'))
-    exit; // Exit if accessed directly
 
 class MainWPSpinActivator {
 
@@ -774,11 +777,20 @@ class MainWPSpinActivator {
         } else {
             add_action('mainwp-activated', array(&$this, 'activateThis'));
         }
-
+        add_action('admin_init', array(&$this, 'admin_init'));
         add_action('admin_notices', array(&$this, 'mainwp_error_notice'));
         add_filter('mainwp-getextensions', array(&$this, 'getExtension'));
     }
 
+    function admin_init() {
+        if (get_option('mainwp_spin_extension_activated') == 'yes')
+        {
+            delete_option('mainwp_spin_extension_activated');
+            wp_redirect(admin_url('admin.php?page=Extensions'));
+            return;
+        }        
+    }
+    
     function getExtension($pArray) {
         $pArray[] = array('plugin' =>  __FILE__, 'api' => 'mainwp-spinner', 'mainwp' => true, 'callback' => array(&$this, 'settings'));
         return $pArray;
