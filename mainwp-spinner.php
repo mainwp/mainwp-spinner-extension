@@ -817,6 +817,9 @@ class MainWPSpinActivator {
         
         $this->childEnabled = apply_filters('mainwp-extension-enabled-check', __FILE__);
         if (!$this->childEnabled) return;
+         
+        if (function_exists("mainwp_current_user_can")&& !mainwp_current_user_can("extension", "mainwp-spinner"))
+            return; 
         
         $mainwp_spin = mainwp_spinner::Instance();
                
