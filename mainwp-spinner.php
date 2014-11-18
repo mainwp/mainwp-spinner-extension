@@ -273,7 +273,7 @@ class mainwp_spinner {
     }
 
     public function spin_post() {
-       		if (!wp_verify_nonce($_POST['nonce'], $this->plugin_handle))
+        if (!wp_verify_nonce($_POST['nonce'], $this->plugin_handle))
             return;
         $post_id = intval($_POST['post_id']);
         if ($post_id < 1)
@@ -760,16 +760,27 @@ class MainWPSpinSpinFailed_Exception extends Exception {
 }
 
 register_activation_hook(__FILE__, 'mainwp_spin_extension_activate');
+register_deactivation_hook(__FILE__, 'mainwp_spin_extension_deactivate');
 function mainwp_spin_extension_activate()
 {   
     update_option('mainwp_spin_extension_activated', 'yes');
+    $extensionActivator = new MainWPSpinActivator();
+    $extensionActivator->activate();
+}
+function mainwp_spin_extension_deactivate()
+{   
+    $extensionActivator = new MainWPSpinActivator();
+    $extensionActivator->deactivate();
 }
 
 
 class MainWPSpinActivator {
-
     protected $mainwpMainActivated = false;    
     protected $childEnabled = false;
+    protected $plugin_handle = "mainwp-spinner";
+    protected $product_id = "MainWP Spinner"; 
+    protected $software_version = "1.8.8";   
+    
     
     public function __construct() {
         $this->mainwpMainActivated = false;
@@ -794,7 +805,7 @@ class MainWPSpinActivator {
     }
     
     function getExtension($pArray) {
-        $pArray[] = array('plugin' =>  __FILE__, 'api' => 'mainwp-spinner', 'mainwp' => true, 'callback' => array(&$this, 'settings'));
+        $pArray[] = array('plugin' =>  __FILE__, 'api' => $this->plugin_handle, 'mainwp' => true, 'callback' => array(&$this, 'settings'), 'apiManager' => true);
         return $pArray;
     }
 
@@ -836,6 +847,31 @@ class MainWPSpinActivator {
             }
         }
     }
+    
+    public function update_option($option_name, $option_value)
+    {
+        $success = add_option($option_name, $option_value, '', 'no');
+
+         if (!$success)
+         {
+             $success = update_option($option_name, $option_value);
+         }
+
+         return $success;
+    }  
+    
+    public function activate() {                          
+        $options = array (  'product_id' => $this->product_id,
+                            'activated_key' => 'Deactivated',  
+                            'instance_id' => apply_filters('mainwp-extensions-apigeneratepassword', 12, false),                            
+                            'software_version' => $this->software_version
+                        );               
+        $this->update_option($this->plugin_handle . "_APIManAdder", $options);
+    } 
+    
+    public function deactivate() {                                 
+        $this->update_option($this->plugin_handle . "_APIManAdder", '');
+    } 	
 
 }
 
