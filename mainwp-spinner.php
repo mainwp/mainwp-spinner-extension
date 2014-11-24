@@ -458,7 +458,7 @@ class mainwp_spinner {
                 'quality' => $bs_quality + 1,
                 'session' => $this->bs_session
             ),
-            'timeout' => 60
+            'timeout' => 60 * 20
         ));
 
         if (!$call || is_a($call, "WP_Error")) {
