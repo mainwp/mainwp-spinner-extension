@@ -779,7 +779,7 @@ class MainWPSpinActivator {
     protected $childEnabled = false;
     protected $plugin_handle = "mainwp-spinner";
     protected $product_id = "MainWP Spinner"; 
-    protected $software_version = "1.8.8";   
+    protected $software_version = "1.9";   
     
     
     public function __construct() {
