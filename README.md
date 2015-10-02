@@ -1,4 +1,0 @@
-spinner
-=======
-
-Spinner Extension
