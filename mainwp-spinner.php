@@ -737,8 +737,9 @@ class MainWP_Spinner {
 		}
 		if ( ! is_null( $description ) ) {
 			if ( ! $inline ) {
-				echo '<br />'; }
-			echo '<small>' . $description . '</small>';
+				echo '<br />'; 
+			}
+			echo '<small><em>' . $description . '</em></small>';
 		}
 		echo '</div>';
 		echo '</div>';
