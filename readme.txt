@@ -16,7 +16,7 @@ Icon URI: http://extensions.mainwp.com/wp-content/uploads/2013/06/spinner-300x30
 == Changelog ==
 
 = 2.1 = 10-2-2015
-* Added: Support for the Spinner Rewriter
+* Added: Support for the Spin Rewriter
 * Added: Support for the WordAi Spinner
 * Updated: Refactored code to meet WordPress coding standards
 * Updated: Extension CSS style
