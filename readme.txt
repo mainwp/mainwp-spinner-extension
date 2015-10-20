@@ -25,8 +25,11 @@ Icon URI: http://extensions.mainwp.com/wp-content/uploads/2013/06/spinner-300x30
 = 2.0 = 
 * Updated: Quick start guide layout
 
+= 1.9 =
+* Added: Support for the API Manager
+
 = 1.8.9 =
-*Added: Warning in case The Best Spinner needs an re-authentication
+* Added: Warning in case The Best Spinner needs an re-authentication
 
 = 1.8.8 = 
 * CSS Update
@@ -46,17 +49,20 @@ Icon URI: http://extensions.mainwp.com/wp-content/uploads/2013/06/spinner-300x30
 = 1.8.4 = 
 * Fix doubling post content
 
+= 1.8.3 =
+* Fixed: WordPress 3.9 compatibility issue
+
 = 1.8.1 = 
-*Fix bug: Error reporting, disable error notice
+* Fix bug: Error reporting, disable error notice
 
 = 1.8 = 
-*Fix Cosmetic Issue: Options outside of the MainWP plugin
+* Fix Cosmetic Issue: Options outside of the MainWP plugin
 
 = 1.7 = 
-*Fix Bug: Spinner Extension is causing Post editor buttons not working (Select color did not apply) 
+* Fix Bug: Spinner Extension is causing Post editor buttons not working (Select color did not apply) 
 
 = 1.6 = 
-*Fix Bug: Spinner Extension is causing Post editor buttons not working
+* Fix Bug: Spinner Extension is causing Post editor buttons not working
 
 = 1.5 = 
 * Fix Bug: Single spin button
@@ -69,6 +75,9 @@ Icon URI: http://extensions.mainwp.com/wp-content/uploads/2013/06/spinner-300x30
 
 = 1.2 = 
 * Fix bug MainWP Spinner Option showing in non-MainWP Posts, need remove settings of MainWP Spinner outside of MainWP Main System
+
+= 1.1 =
+* Fixed: Authentication Issue
 
 = 1.0.0 =
 * First version
