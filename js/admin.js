@@ -203,7 +203,7 @@ function spin_auto_save()
 					var k = parseInt( name.match( /\[(.*?)\]/ )[1] );
 					name = name.replace( /\[.*?\]/, '' );
 					if (typeof (send_fields[name]) == 'undefined') {
-						send_fields[name] = new Array(); }
+						send_fields[name] = []; }
 					if ( ! k) {
 						k = 0; }
 					if (k == 0 && send_fields[name].length > 0) {

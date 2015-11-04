@@ -35,7 +35,7 @@ class MainWP_Spinner {
 	 * @return MainWP_Spinner
 	 */
 	static function get_instance() {
-		if ( null == MainWP_Spinner::$instance ) {
+		if ( null === MainWP_Spinner::$instance ) {
 			MainWP_Spinner::$instance = new MainWP_Spinner();
 		}
 		return MainWP_Spinner::$instance;
@@ -226,10 +226,10 @@ class MainWP_Spinner {
 		$this->modules['cr'] = new MainWP_Spin_Module_CR( $this, $this->option['cr_username'], $this->option['cr_api_key'], ! empty( $this->option['cr_aid'] ) ? $this->option['cr_aid'] : 'wp-spinchimp' );
 		// load The WordAi
 		include_once $this->plugin_dir . 'modules/word-ai.php';
-		$this->modules['wai'] = new MainWP_Word_AI( $this, $this->option['wai_username'], $this->option['wai_passwd'], $this->option['wai_hash'] );
+		$this->modules['wai'] = new MainWP_Word_AI( $this, isset( $this->option['wai_username'] ) ? $this->option['wai_username'] : "", isset( $this->option['wai_passwd'] ) ? $this->option['wai_passwd'] : "", isset( $this->option['wai_hash'] ) ? $this->option['wai_hash'] : "" );
 		// load The SpinRewriter
 		include_once $this->plugin_dir . 'modules/spin-rewriter.php';
-		$this->modules['srw'] = new MainWP_Spin_Rewriter( $this, $this->option['srw_email_address'], $this->option['srw_api_key'] );
+		$this->modules['srw'] = new MainWP_Spin_Rewriter( $this, isset( $this->option['srw_email_address'] ) ? $this->option['srw_email_address'] : "", isset( $this->option['srw_api_key'] ) ? $this->option['srw_api_key'] : "" );
 	}
 
 	public function get_option( $key ) {
