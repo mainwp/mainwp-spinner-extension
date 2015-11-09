@@ -174,7 +174,7 @@ if ( ! class_exists( 'MainWP_Word_AI' ) ) :
 
 			$auth_str = ! empty( $this->api_hash ) ? $this->api_hash : ( ! empty( $this->api_passw ) ? md5( substr( md5( $this->api_passw ),0,15 ) ) : '');
 			if ( ! empty( $auth_str ) ) {
-				$auth_str = 'hash=' . $auth_str;
+				$auth_str = '&hash=' . $auth_str;
 			} else {
 				$error_msg = 'Make sure the password or hash are not empty.';
 				$error_bs = true;

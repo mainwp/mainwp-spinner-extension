@@ -132,9 +132,7 @@ if ( ! class_exists( 'MainWP_Spin_Module_SC' ) ) :
 			$querytimes = $this->curl_request( 'http://' . $url, 'Test' );
 			if ( strpos( $querytimes, 'error=' ) === false ) {
 				$this->main->set_option( 'sp_message', 'Remain Spinnerchief queries: ' . base64_decode( $querytimes ) );
-			} else {
-				$this->main->set_option( 'sp_message', '' );
-			}
+			} 
 		}
 
 		public function spin_authenticate() {

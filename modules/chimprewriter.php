@@ -143,8 +143,7 @@ if ( ! class_exists( 'MainWP_Spin_Module_CR' ) ) :
 				$this->main->set_option( 'sp_message', 'Remain Chimp Rewriter queries:  ' . $result['result'] );
 			} else {
 				$this->main->set_option( 'sp_error_message', 'Test Chimp Rewriter failed: ' . $result['error'] );
-				$this->main->set_option( 'sp_error', 1 );
-				$this->main->set_option( 'sp_message', '' ); // clear message of sc spinner
+				$this->main->set_option( 'sp_error', 1 );				
 			}
 		}
 

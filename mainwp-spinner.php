@@ -372,6 +372,8 @@ class MainWP_Spinner {
 
 	public function ajax_test_spin() {
 		$this->set_option( 'sp_spinner', $_POST['sp_spinner'] );
+		$this->set_option( 'sp_message', '' ); // clear message
+		//		
 		// test authenticate before to reduce request
 		if ( 'wai' == $_POST['sp_spinner'] || 'srw' == $_POST['sp_spinner'] ) {
 			$this->test_spin();
