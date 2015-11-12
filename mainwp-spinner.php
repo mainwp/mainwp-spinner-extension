@@ -637,22 +637,24 @@ class MainWP_Spinner {
 		return $post_data;
 	}
 
-	function parse_spin_text( $data ) {
+	function parse_spin_text( $data ) {	
 		$leftchar = '{';
 		$rightchar = '}';
 		$splitchar = '|';
 		$start_pos = array();
 		$pos = -1;
-		while ( $pos++ < strlen( $data ) ) {
-			if ( substr( $data, $pos, strlen( $leftchar ) ) == $leftchar ) {
+		while ( $pos++ < strlen( $data ) ) {			
+			if ( substr( $data, $pos, strlen( $leftchar ) ) == $leftchar ) {				
 				$start_pos[] = $pos;
-			} elseif ( substr( $data, $pos, strlen( $rightchar ) ) == $rightchar ) {
-				$startPos = array_pop( $start_pos );
-				$entirespinner = substr( $data, $startPos + strlen( $leftchar ), ($pos - $startPos) - strlen( $rightchar ) );
-				$syn = explode( $splitchar, $entirespinner );
-				$processed = $syn[ array_rand( $syn ) ];
-				$data = str_replace( $leftchar . $entirespinner . $rightchar, $processed, $data );
-				$pos = $startPos;
+			} elseif ( substr( $data, $pos, strlen( $rightchar ) ) == $rightchar ) {				
+				if ( count($start_pos) > 0 ) {
+					$startPos = array_pop( $start_pos ); 
+					$entirespinner = substr( $data, $startPos + strlen( $leftchar ), ($pos - $startPos) - strlen( $rightchar ) );				
+					$syn = explode( $splitchar, $entirespinner );
+					$processed = $syn[ array_rand( $syn ) ];
+					$data = str_replace( $leftchar . $entirespinner . $rightchar, $processed, $data );
+					$pos = $startPos;													
+				}				
 			}
 		}
 		return $data;
