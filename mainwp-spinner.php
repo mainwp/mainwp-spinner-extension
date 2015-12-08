@@ -779,6 +779,8 @@ function mainwp_spin_extension_activate() {
 	update_option( 'mainwp_spin_extension_activated', 'yes' );
 	$extensionActivator = new MainWPSpinActivator();
 	$extensionActivator->activate();
+	$plugin_slug = plugin_basename(__FILE__);  	
+	do_action('mainwp_enable_extension', $plugin_slug);
 }
 
 function mainwp_spin_extension_deactivate() {
@@ -865,10 +867,6 @@ class MainWPSpinActivator {
 
 	function activate_this_extension() {
 		$this->mainwpMainActivated = apply_filters( 'mainwp-activated-check', $this->mainwpMainActivated );
-
-		$activated = apply_filters( 'mainwp-activated-sub-check', array( 'mainwp-spinner' ) );
-		if ( ! isset( $activated['result'] ) || ( 'VALID' != $activated['result']) ) {
-			return; }
 
 		$this->childEnabled = apply_filters( 'mainwp-extension-enabled-check', __FILE__ );
 		if ( ! $this->childEnabled ) {
