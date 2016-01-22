@@ -48,6 +48,7 @@ class MainWP_Spinner {
 		$this->plugin_url = plugin_dir_url( __FILE__ );
 		$this->plugin_slug = plugin_basename( __FILE__ );
 
+		add_action( 'init', array( &$this, 'localization' ) );
 		add_action( 'admin_init', array( &$this, 'admin_init' ) );
 		add_filter( 'plugin_row_meta', array( &$this, 'plugin_row_meta' ), 10, 2 );
 		add_action( 'after_plugin_row', array( &$this, 'after_plugin_row' ), 10, 3 );
@@ -61,6 +62,10 @@ class MainWP_Spinner {
 		add_filter( 'wp_insert_post_data', array( &$this, 'filter_post_slug' ), 10, 2 );
 	}
 
+	public function localization() {
+		load_plugin_textdomain( 'mainwp-spinner', false,  dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
+	}
+	
 	public function admin_init() {
 		wp_enqueue_style( $this->plugin_handle . '-admin-css', $this->plugin_url . 'css/admin.css' );
 		wp_enqueue_script( $this->plugin_handle . '-admin-js', $this->plugin_url . 'js/admin.js' );
@@ -70,8 +75,8 @@ class MainWP_Spinner {
 		//wp_enqueue_script('thickbox');
 		// hook
 		/* add_meta_box('mainwpspin', __("MainWP Spinner Option"), array(&$this, 'metabox'), 'post', 'normal', 'high'); */
-		add_meta_box( 'mainwpspin', __( 'MainWP Spinner Options' ), array( &$this, 'metabox' ), 'bulkpost', 'normal', 'high' );
-		add_meta_box( 'mainwpspin', __( 'MainWP Spinner Options' ), array( &$this, 'metabox' ), 'bulkpage', 'normal', 'high' );
+		add_meta_box( 'mainwpspin', __( 'MainWP Spinner Options', 'mainwp-spinner' ), array( &$this, 'metabox' ), 'bulkpost', 'normal', 'high' );
+		add_meta_box( 'mainwpspin', __( 'MainWP Spinner Options', 'mainwp-spinner' ), array( &$this, 'metabox' ), 'bulkpage', 'normal', 'high' );
 
 		//add_action('post_submitbox_misc_actions', array(&$this, 'submitbox'));
 		add_action( 'save_post', array( &$this, 'save_post' ), 9 );
@@ -860,7 +865,7 @@ class MainWPSpinActivator {
 				<b><?php echo __( 'Need Help?' ); ?></b> <?php echo __( 'Review the Extension' ); ?> <a href="<?php echo $documentation_url; ?>" target="_blank"><i class="fa fa-book"></i> <?php echo __( 'Documentation' ); ?></a>. 
 				<a href="#" id="mainwp-spin-quick-start-guide"><i class="fa fa-info-circle"></i> <?php _e( 'Show Quick Start Guide', 'mainwp' ); ?></a></div>
             <div class="mainwp_ext_info_box" id="mainwp-spin-tips" style="color: #333!important; text-shadow: none!important;">
-				<span><a href="#" class="mainwp-show-tut" number="1"><i class="fa fa-book"></i> <?php _e( 'How to Spin Articles', 'mainwp' ) ?></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href="#" id="mainwp-spin-tips-dismiss" style="float: right;"><i class="fa fa-times-circle"></i> <?php _e( 'Dismiss', 'mainwp' ); ?></a></span>
+				<span><a href="#" class="mainwp-show-tut" number="1"><i class="fa fa-book"></i> <?php _e( 'How to Spin Articles', 'mainwp-spinner' ) ?></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href="#" id="mainwp-spin-tips-dismiss" style="float: right;"><i class="fa fa-times-circle"></i> <?php _e( 'Dismiss', 'mainwp' ); ?></a></span>
                 <div class="clear"></div>
                 <div id="mainwp-spin-tuts">
                     <div class="mainwp-spin-tut" number="1">
@@ -910,7 +915,7 @@ class MainWPSpinActivator {
 		global $current_screen;
 		if ( $current_screen->parent_base == 'plugins' ) {
 			if ( $this->mainwpMainActivated == false ) {
-				echo '<div class="error"><p>MainWP Spinner ' . __( 'requires <a href="http://mainwp.com/" target="_blank">MainWP Plugin</a> to be activated in order to work. Please install and activate <a href="http://mainwp.com/" target="_blank">MainWP Plugin</a> first.' ) . '</p></div>';
+				echo '<div class="error"><p>MainWP Spinner ' . __( 'requires <a href="http://mainwp.com/" target="_blank">MainWP Dashboard Plugin</a> to be activated in order to work. Please install and activate <a href="http://mainwp.com/" target="_blank">MainWP Dashboard Plugin</a> first.' ) . '</p></div>';
 			}
 		}
 	}

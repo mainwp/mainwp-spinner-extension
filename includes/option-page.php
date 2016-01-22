@@ -12,10 +12,10 @@ $template_nonce = wp_create_nonce( $this->plugin_handle . '-template-ajax' );
 				<?php
 				switch ( $_REQUEST['message'] ) {
 					case '1':
-						_e( 'Option Saved' );
+						_e( 'Option Saved', 'mainwp-spinner' );
 						break;
 					case '3':
-						_e( 'An error occured while trying to save' );
+						_e( 'An error occured while trying to save', 'mainwp-spinner' );
 						break;
 				}
 				?>
@@ -38,7 +38,7 @@ $template_nonce = wp_create_nonce( $this->plugin_handle . '-template-ajax' );
         <div class="settings">
             <div class="postbox mainwp_spinner_postbox" section="1">
 				<div class="handlediv"><br /></div>
-				<h3 class="hndle mainwp_box_title" id="1"><span><i class="fa fa-cog"></i> <?php _e( 'General Settings' ) ?></span></h3>
+				<h3 class="hndle mainwp_box_title" id="1"><span><i class="fa fa-cog"></i> <?php _e( 'General Settings', 'mainwp-spinner' ) ?></span></h3>
                 <div class="inside">
 					<?php
 					$this->create_option_field( 'sp_enable', __( 'Enable an Automatic Spinner','mainwp-spinner' ), 'select', 1, array( 'No', 'Yes' ) );
@@ -120,7 +120,7 @@ $template_nonce = wp_create_nonce( $this->plugin_handle . '-template-ajax' );
             
             <div class="postbox mainwp_spinner_postbox" section="5">
 				<div class="handlediv"><br /></div>
-				<h3 class="hndle mainwp_box_title" id="4"><span><i class="fa fa-cog"></i> <?php _e( 'WordAi Settings' ) ?></span></h3>
+				<h3 class="hndle mainwp_box_title" id="4"><span><i class="fa fa-cog"></i> <?php _e( 'WordAi Settings', 'mainwp-spinner' ) ?></span></h3>
                 <div class="inside">
 					<?php
 					$this->create_option_field( 'wai_username', __( "User's WordAi account email" ), 'text', '', '', __('Your login email. Used to authenticate.', 'mainwp-spinner') );

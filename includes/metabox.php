@@ -208,6 +208,6 @@ $spinner = $this->get_option( 'sp_spinner' );
 
 <script>
     jQuery(document).ready(function ($) {
-        $('#titlewrap').after('<div class="mainwp_info-box-yellow"><?php _e( 'Use text mode when spinning HTML the Visual editor will corrupt the spun code' ); ?></div>');
+        $('#titlewrap').after('<div class="mainwp_info-box-yellow"><?php _e( 'Use text mode when spinning HTML the Visual editor will corrupt the spun code', 'mainwp-spinner' ); ?></div>');
     })
 </script>
