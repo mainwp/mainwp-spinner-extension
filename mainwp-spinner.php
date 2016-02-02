@@ -97,6 +97,13 @@ class MainWP_Spinner {
 	public function plugin_row_meta( $plugin_meta, $plugin_file ) {
 		if ( $this->plugin_slug != $plugin_file ) {
 			return $plugin_meta; }
+			
+		$slug = basename($plugin_file, ".php");
+		$api_data = get_option( $slug. '_APIManAdder');		
+		if (!is_array($api_data) || !isset($api_data['activated_key']) || $api_data['activated_key'] != 'Activated' || !isset($api_data['api_key']) || empty($api_data['api_key']) ) {
+			return $plugin_meta;
+		}
+		
 		$plugin_meta[] = '<a href="?do=checkUpgrade" title="Check for updates.">Check for updates now</a>';
 		return $plugin_meta;
 	}
@@ -117,7 +124,7 @@ class MainWP_Spinner {
 					}
 				</style>
 				<tr class="plugin-update-tr active"><td colspan="3" class="plugin-update colspanchange"><div class="update-message api-deactivate">
-				<?php echo (sprintf(__("API not activated check your %sMainWP account%s for updates. For automatic update notification please activate the API.", "mainwp"), '<a href="https://extensions.mainwp.com/my-account" target="_blank">', '</a>')); ?>
+				<?php echo (sprintf(__("API not activated check your %sMainWP account%s for updates. For automatic update notification please activate the API.", "mainwp"), '<a href="https://mainwp.com/my-account" target="_blank">', '</a>')); ?>
 				</div></td></tr>
 				<?php
 			}
@@ -807,9 +814,7 @@ register_deactivation_hook( __FILE__, 'mainwp_spin_extension_deactivate' );
 function mainwp_spin_extension_activate() {
 	update_option( 'mainwp_spin_extension_activated', 'yes' );
 	$extensionActivator = new MainWPSpinActivator();
-	$extensionActivator->activate();
-	$plugin_slug = plugin_basename(__FILE__);  	
-	do_action('mainwp_enable_extension', $plugin_slug);
+	$extensionActivator->activate();	
 }
 
 function mainwp_spin_extension_deactivate() {
@@ -857,53 +862,44 @@ class MainWPSpinActivator {
 		$extraHeaders = array( 'DocumentationURI' => 'Documentation URI' );
 		$file_data = get_file_data( MAINWP_SPINNER_PLUGIN_FILE, $extraHeaders );
 		$documentation_url = $file_data['DocumentationURI'];
-		do_action( 'mainwp-pageheader-extensions', __FILE__ );
-		if ( $this->childEnabled ) {
-			?>
-            <div class="mainwp_ext_info_box">
-				<div class="mainwp-ext-description"><?php echo $description; ?></div><br/>
-				<b><?php echo __( 'Need Help?' ); ?></b> <?php echo __( 'Review the Extension' ); ?> <a href="<?php echo $documentation_url; ?>" target="_blank"><i class="fa fa-book"></i> <?php echo __( 'Documentation' ); ?></a>. 
-				<a href="#" id="mainwp-spin-quick-start-guide"><i class="fa fa-info-circle"></i> <?php _e( 'Show Quick Start Guide', 'mainwp' ); ?></a></div>
-            <div class="mainwp_ext_info_box" id="mainwp-spin-tips" style="color: #333!important; text-shadow: none!important;">
-				<span><a href="#" class="mainwp-show-tut" number="1"><i class="fa fa-book"></i> <?php _e( 'How to Spin Articles', 'mainwp-spinner' ) ?></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href="#" id="mainwp-spin-tips-dismiss" style="float: right;"><i class="fa fa-times-circle"></i> <?php _e( 'Dismiss', 'mainwp' ); ?></a></span>
-                <div class="clear"></div>
-                <div id="mainwp-spin-tuts">
-                    <div class="mainwp-spin-tut" number="1">
-                        <h3>How to Spin Articles</h3>
-                        <p>When youâ€™re writing articles or page content for your blogs, with installed MainWP Spinning extension you have new options added in Add New Post and Add New Page pages.</p>
-                        <img src="http://docs.mainwp.com/wp-content/uploads/2013/06/new-spin-widget.jpg">
-                        <p>To use the Single Spin button, select a word, part of a text or whole text you wrote and click the button.</p>
-                        <p>For example, if you enter word â€œcomputerâ€� and click Single Spin, you will get few synonyms for your word.</p>
-                        <img src="http://docs.mainwp.com/wp-content/uploads/2013/06/new-spinned-1024x224.jpg">
-                        <p>After posting this in few of your site, in one site you will see word, in second some other word, in third one other synonym,</p>
-                        <p>If you want to use Full Article Spinner, after writing your article, in MainWP Spinner Options box.</p>
-                        <p>Set maximum synonyms per term, replacement quality,</p>
-                        <p>Enter words you donâ€™t want to spin,</p>
-                        <p>Select whether you like to spin Post Title,</p>
-                        <p>Click the Spin Now button.</p>
-                        <p>After spinning is done, select sites to post article to and click Publish.</p>
-                    </div>
-                </div>
-            </div>
-
-			<?php
-			MainWP_Spinner::get_instance()->option_page();
-		} else {
-			?><div class="mainwp_info-box-yellow"><strong>The Extension has to be enabled to change the settings.</strong></div><?php
-		}
+		do_action( 'mainwp-pageheader-extensions', __FILE__ );		
+		?>
+		<div class="mainwp_ext_info_box">
+			<div class="mainwp-ext-description"><?php echo $description; ?></div><br/>
+			<b><?php echo __( 'Need Help?' ); ?></b> <?php echo __( 'Review the Extension' ); ?> <a href="<?php echo $documentation_url; ?>" target="_blank"><i class="fa fa-book"></i> <?php echo __( 'Documentation' ); ?></a>. 
+			<a href="#" id="mainwp-spin-quick-start-guide"><i class="fa fa-info-circle"></i> <?php _e( 'Show Quick Start Guide', 'mainwp' ); ?></a></div>
+		<div class="mainwp_ext_info_box" id="mainwp-spin-tips" style="color: #333!important; text-shadow: none!important;">
+			<span><a href="#" class="mainwp-show-tut" number="1"><i class="fa fa-book"></i> <?php _e( 'How to Spin Articles', 'mainwp-spinner' ) ?></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href="#" id="mainwp-spin-tips-dismiss" style="float: right;"><i class="fa fa-times-circle"></i> <?php _e( 'Dismiss', 'mainwp' ); ?></a></span>
+			<div class="clear"></div>
+			<div id="mainwp-spin-tuts">
+				<div class="mainwp-spin-tut" number="1">
+					<h3>How to Spin Articles</h3>
+					<p>When youâ€™re writing articles or page content for your blogs, with installed MainWP Spinning extension you have new options added in Add New Post and Add New Page pages.</p>
+					<img src="http://docs.mainwp.com/wp-content/uploads/2013/06/new-spin-widget.jpg">
+					<p>To use the Single Spin button, select a word, part of a text or whole text you wrote and click the button.</p>
+					<p>For example, if you enter word â€œcomputerâ€� and click Single Spin, you will get few synonyms for your word.</p>
+					<img src="http://docs.mainwp.com/wp-content/uploads/2013/06/new-spinned-1024x224.jpg">
+					<p>After posting this in few of your site, in one site you will see word, in second some other word, in third one other synonym,</p>
+					<p>If you want to use Full Article Spinner, after writing your article, in MainWP Spinner Options box.</p>
+					<p>Set maximum synonyms per term, replacement quality,</p>
+					<p>Enter words you donâ€™t want to spin,</p>
+					<p>Select whether you like to spin Post Title,</p>
+					<p>Click the Spin Now button.</p>
+					<p>After spinning is done, select sites to post article to and click Publish.</p>
+				</div>
+			</div>
+		</div>
+		<?php
+		MainWP_Spinner::get_instance()->option_page();		
 		do_action( 'mainwp-pagefooter-extensions', __FILE__ );
 	}
 
 	function activate_this_extension() {
 		$this->mainwpMainActivated = apply_filters( 'mainwp-activated-check', $this->mainwpMainActivated );
-
 		$this->childEnabled = apply_filters( 'mainwp-extension-enabled-check', __FILE__ );
-		if ( ! $this->childEnabled ) {
-			return; }
-
 		if ( function_exists( 'mainwp_current_user_can' ) && ! mainwp_current_user_can( 'extension', 'mainwp-spinner' ) ) {
-			return; }
-
+			return; 			
+		}
 		$mainwp_spin = MainWP_Spinner::get_instance();
 
 		add_filter( 'mainwp-pre-posting-posts', array( &$mainwp_spin, 'filter_bulkpost_data' ) );
