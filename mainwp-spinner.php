@@ -941,7 +941,6 @@ class MainWPSpinActivator {
 	}
 }
 
-global $MainWPSpinActivator;
 new MainWPSpinActivator();
 
 
