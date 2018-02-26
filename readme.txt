@@ -2,34 +2,36 @@
 Plugin Name: MainWP Spinner Extension
 Plugin URI: https://mainwp.com
 Description: MainWP Spinner Extension allows words to spun {|} when when adding articles and posts to your blogs. Requires the installation of MainWP Main Plugin.
-Version: 2.4
+Version: 2.5
 Author: MainWP
 Author URI: https://mainwp.com
-Icon URI:
 
 
 == Installation ==
-1. Please install plugin "MainWP Dashboard" and active it before install Clone Extension plugin (get the MainWP Dashboard plugin from url:http://mainwp.com/)
+1. Please install plugin "MainWP Dashboard" and active it before install Clone Extension plugin (get the MainWP Dashboard plugin from url:https://mainwp.com/)
 2. Upload the `mainwp-spinner` folder to the `/wp-content/plugins/` directory
 3. Activate the Spinner Extension plugin through the 'Plugins' menu in WordPress
 
 == Changelog ==
 
-= 2.4 = 2-17-2016
+= 2.5 - 2-26-2018
+* Updated: plugin info
+
+= 2.4 - 2-17-2016 =
 * Fixed: Translation issue
 * Added: An auto update warning if the extension is not activated
 * Added: Support for the new API management
 * Added: Support for WP-CLI
 * Updated: "Check for updates now" link is not vidible if extension is not activated
 
-= 2.3 = 11-13-2015
+= 2.3 - 11-13-2015 =
 * Fixed: Bug with WordAI spin test
 * Fixed: Issue with incorrect spintax
 
-= 2.2 = 11-6-2015
+= 2.2 - 11-6-2015 =
 * Fixed: Multiple PHP Warnings
 
-= 2.1 = 10-2-2015
+= 2.1 - 10-2-2015 =
 * Added: Support for the Spin Rewriter
 * Added: Support for the WordAi Spinner
 * Updated: Refactored code to meet WordPress coding standards
