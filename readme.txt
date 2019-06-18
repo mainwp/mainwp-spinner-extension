@@ -2,7 +2,7 @@
 Plugin Name: MainWP Spinner Extension
 Plugin URI: https://mainwp.com
 Description: MainWP Spinner Extension allows words to spun {|} when when adding articles and posts to your blogs. Requires the installation of MainWP Main Plugin.
-Version: 2.5
+Version: 4.0-beta2.0
 Author: MainWP
 Author URI: https://mainwp.com
 
@@ -38,7 +38,7 @@ Author URI: https://mainwp.com
 * Updated: Extension CSS style
 * Updated: Extension tranlation support
 
-= 2.0 = 
+= 2.0 =
 * Updated: Quick start guide layout
 
 = 1.9 =
@@ -47,49 +47,49 @@ Author URI: https://mainwp.com
 = 1.8.9 =
 * Added: Warning in case The Best Spinner needs an re-authentication
 
-= 1.8.8 = 
+= 1.8.8 =
 * CSS Update
 * Add Support URI and Documentation URI in the plugin info
 
-= 1.8.7 = 
+= 1.8.7 =
 * Support Post Plus extension
 * Add notice for spin html
 
-= 1.8.6 = 
+= 1.8.6 =
 * Fix warning
 
-= 1.8.5 = 
+= 1.8.5 =
 * Support spin for Post Dripper extension
 * Fix warning
 
-= 1.8.4 = 
+= 1.8.4 =
 * Fix doubling post content
 
 = 1.8.3 =
 * Fixed: WordPress 3.9 compatibility issue
 
-= 1.8.1 = 
+= 1.8.1 =
 * Fix bug: Error reporting, disable error notice
 
-= 1.8 = 
+= 1.8 =
 * Fix Cosmetic Issue: Options outside of the MainWP plugin
 
-= 1.7 = 
-* Fix Bug: Spinner Extension is causing Post editor buttons not working (Select color did not apply) 
+= 1.7 =
+* Fix Bug: Spinner Extension is causing Post editor buttons not working (Select color did not apply)
 
-= 1.6 = 
+= 1.6 =
 * Fix Bug: Spinner Extension is causing Post editor buttons not working
 
-= 1.5 = 
+= 1.5 =
 * Fix Bug: Single spin button
 
-= 1.4 = 
+= 1.4 =
 * Fix Bug: "Spin Now" deletes post content (ticket number 23)
 
-= 1.3 = 
+= 1.3 =
 * Fix Usability Issue: Article Formatting (ticket number 20)
 
-= 1.2 = 
+= 1.2 =
 * Fix bug MainWP Spinner Option showing in non-MainWP Posts, need remove settings of MainWP Spinner outside of MainWP Main System
 
 = 1.1 =
@@ -97,4 +97,3 @@ Author URI: https://mainwp.com
 
 = 1.0.0 =
 * First version
-

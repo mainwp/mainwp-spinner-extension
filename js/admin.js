@@ -1,44 +1,48 @@
-/*
- Administration Javascript for MainWP Spinner Extention
- */
 jQuery( document ).ready(function ($) {
-	jQuery( '#spinner_infobox-spin' ).insertBefore( '#mainwp-tabs' );
-	jQuery( '#spinner_errorbox-spin' ).insertBefore( '#mainwp-tabs' );
 
+	// Spin process
 	mainwpspin_spin_article = function () {
-		//         jQuery(this).attr('disabled', 'disabled');
-		//            jQuery(this).next('.spin_loading').show();
-		var fields = jQuery( '#mainwp-spin-meta-box' ).find( 'input[type=hidden], input[type=text], input[type=checkbox]:checked, select, textarea' );
+		var fields = jQuery( '#mainwp-spinner-metabox' ).find( 'input[type=hidden], input[type=text], input[type=checkbox]:checked, select, textarea' );
 		var send_fields = {};
-		for (i = 0; i < fields.size(); i++) {
+		jQuery( '#mainwp-spinner-message-zone' ).html( '' ).hide();
+		jQuery( '#mainwp-spinner-message-zone' ).removeClass( 'green yellow red' );
+
+		jQuery( '#mainwp-spinner-message-zone' ).html( '<i class="notched circle loading icon"></i> ' + __( 'Working. Please wait...' ) ).show();
+
+		for ( i = 0; i < fields.size(); i++ ) {
 			field = jQuery( fields[i] );
 			if ( ! field.attr( 'disabled' ) && field.attr( 'name' )) {
 				var value = field.val();
 				var name = field.attr( 'name' );
-				if (name == 'mainwpspin_nonce') {
+				if ( name == 'mainwpspin_nonce' ) {
 					name = 'nonce';
 				}
 				send_fields[name] = value;
 			}
 		}
+
 		send_fields['action'] = "spin_post";
 		send_fields['post_id'] = jQuery( '#post_ID' ).val();
-		jQuery.post(ajaxurl, send_fields, function (obj) {
+
+		jQuery.post( ajaxurl, send_fields, function ( obj ) {
 			jQuery( '#post_spin_article' ).removeAttr( 'disabled' );
 			jQuery( '#post_spin_article' ).next( '.spin_loading' ).hide();
-			if (obj.success == 0) {
-				mainwpspin_showError( '#spinner_meta_errorbox-spin', obj.text );
+			if ( obj.success == 0 ) {
+				jQuery( '#mainwp-spinner-message-zone' ).html( obj.text ).show();
+				jQuery( '#mainwp-spinner-message-zone' ).addClass( 'red' );
 				return;
 			} else {
-				mainwpspin_showInformation( '#spinner_meta_infobox-spin', "Spin successful." );
+				jQuery( '#mainwp-spinner-message-zone' ).html( 'Spinning completed succesfully.' ).show();
+				jQuery( '#mainwp-spinner-message-zone' ).addClass( 'green' );
 			}
-			if (tinyMCE.activeEditor) {
+
+			if ( tinyMCE.activeEditor ) {
 				tinyMCE.activeEditor.setContent( mainwpspin_highlight_spin_nested( obj.post.post_content ) );
 			} else {
 				jQuery( '#content' ).val( obj.post.post_content );
 			}
 			jQuery( '#title' ).val( obj.post.post_title );
-			jQuery.post(ajaxurl, {
+			jQuery.post( ajaxurl, {
 				action: 'sample-permalink',
 				post_id: jQuery( '#post_ID' ).val(),
 				new_slug: obj.post.post_name,
@@ -46,27 +50,24 @@ jQuery( document ).ready(function ($) {
 				samplepermalinknonce: $( '#samplepermalinknonce' ).val()
 				}, function (data) {
 					$( '#edit-slug-box' ).html( data );
-					//real_slug.attr('value', new_slug);
 					$( '#view-post-btn' ).show();
 				});
 		}, 'json');
 		return false;
 	};
 
-	jQuery( '#post_spin_article' ).click(function () {
-		jQuery( '#spinner_meta_errorbox-spin' ).hide();
-		jQuery( '#spinner_meta_infobox-spin' ).hide();
+	// Trigger the spin process
+	jQuery( '#post_spin_article' ).click( function () {
+		jQuery( '#mainwp-spinner-message-zone' ).html( '' ).hide();
+		jQuery( '#mainwp-spinner-message-zone' ).removeClass( 'green yellow red' );
 		jQuery( this ).attr( 'disabled', 'disabled' );
-		jQuery( this ).next( '.spin_loading' ).show();
-		if (typeof autosave_disable_buttons !== 'undefined') {
+		jQuery( '#mainwp-spinner-message-zone' ).html( '<i class="notched circle loading icon"></i> ' + __ ( 'Working. Please wait...' ) ).show();
+		if ( typeof autosave_disable_buttons !== 'undefined' ) {
 			mainwpspin_autosave_and_spin();
 		} else {
-			// fix for compatible with WP 3.9
-			//console.log(autosave);
-			//console.log(window.wp.autosave);
 			window.wp.autosave.server.triggerSave();
 			setTimeout(function () {
-							mainwpspin_spin_article();
+				mainwpspin_spin_article();
 			}, 5000);
 		}
 		return false;
@@ -76,7 +77,7 @@ jQuery( document ).ready(function ($) {
 		// (bool) is rich editor enabled and active
 		blockSave = true;
 		var rich = (typeof tinymce != "undefined") && tinymce.activeEditor && ! tinymce.activeEditor.isHidden(),
-				post_data, doAutoSave, ed, origStatus, successCallback;
+			post_data, doAutoSave, ed, origStatus, successCallback;
 		autosave_disable_buttons();
 		post_data = {
 			action: "autosave",
@@ -165,82 +166,41 @@ jQuery( document ).ready(function ($) {
 		});
 	};
 
+	// Trigger and execute the Spinner test process.
 	jQuery( '#test_spin' ).click(function () {
+		jQuery( '#mainwp-message-zone' ).html( '' ).hide();
+		jQuery( '#mainwp-message-zone' ).removeClass( 'red yellow green' );
+
 		jQuery( this ).attr( 'disabled', 'disabled' );
-		jQuery( '#spinner_test-spin-status' ).text( "Testing ..." );
-		jQuery( this ).next( '.spin_loading' ).show();
-		jQuery.post(ajaxurl, {
+		jQuery( '#mainwp-message-zone' ).html( '<i class="notched circle loading icon"></i> ' + 'Testing the spinner settings. Please wait...' ).show();
+		jQuery.post( ajaxurl, {
 			action: 'test_spin',
 			sp_spinner: jQuery( '#sp_spinner' ).val()
-			}, function (data) {
+			}, function ( data ) {
 				jQuery( '#test_spin' ).removeAttr( 'disabled' );
-				jQuery( '#test_spin' ).next( '.spin_loading' ).hide();
-				jQuery( '#spinner_test-spin-status' ).text( "" );
-				if (data.error) {
-					mainwpspin_hideBox( '#spinner_infobox-spin' );
-					mainwpspin_showError( '#spinner_errorbox-spin', data.text );
+				jQuery( '#mainwp-message-zone' ).html( '' ).hide();
+				if ( data.error ) {
+					jQuery( '#mainwp-message-zone' ).html( '<i class="close icon"></i> ' + data.text ).show();
+					jQuery( '#mainwp-message-zone' ).addClass( 'red' );
 					return;
 				}
-				mainwpspin_showInformation( '#spinner_infobox-spin', data.text );
-				mainwpspin_hideBox( '#spinner_errorbox-spin' );
+				jQuery( '#mainwp-message-zone' ).html( '<i class="close icon"></i> ' + data.text ).show();
+				jQuery( '#mainwp-message-zone' ).addClass( 'green' );
 			}, 'json');
 	});
 
 });
 
-
-function spin_auto_save()
-{
-	if (jQuery( '#mainwp-option-form' ).data( 'changed' ) == 1) {
-		var fields = jQuery( '#mainwp-option-form' ).find( 'input[type=hidden], input[type=text], input[type=password], input[type=checkbox]:checked, input[type=radio]:checked, select, textarea' );
-		var send_fields = {};
-		for (i = 0; i < fields.size(); i++) {
-			field = jQuery( fields[i] );
-			if ( ! field.attr( 'disabled' ) && field.attr( 'name' )) {
-				var value = field.val();
-				var name = field.attr( 'name' );
-				if (name.match( /\[.*?\]/ )) {
-					var k = parseInt( name.match( /\[(.*?)\]/ )[1] );
-					name = name.replace( /\[.*?\]/, '' );
-					if (typeof (send_fields[name]) == 'undefined') {
-						send_fields[name] = []; }
-					if ( ! k) {
-						k = 0; }
-					if (k == 0 && send_fields[name].length > 0) {
-						k = send_fields[name].length;
-					}
-					send_fields[name][k] = value;
-				} else {
-					send_fields[name] = value;
-				}
-			}
-		}
-		if (jQuery( '#mainwp-option-form' ).data( 'changed' ) == 1) {
-			jQuery( '#spinner_option-save-status' ).text( "Saving..." );
-			send_fields['action'] = 'option_auto_save';
-			jQuery.post(ajaxurl, send_fields, function (data) {
-				jQuery( '#spinner_option-save-status' ).text( data );
-				jQuery( '#mainwp-option-form' ).data( 'changed', 0 );
-			});
-		}
-	}
-	setTimeout(function () {
-		spin_auto_save();
-	}, 5000);
-}
-
-function mainwpspin_highlight_spin(content)
-{
+// Highlight the spun content
+function mainwpspin_highlight_spin( content ) {
 	return content.replace( /(\{.*?\})/gim, '<span class="spin_text">$1</span>' );
 }
 
-function mainwpspin_unhighlight_spin(content)
-{
+function mainwpspin_unhighlight_spin( content ) {
 	return content.replace( /<span *class=[''"]spin_text_[0-9]*[''"]>(.*?)<\/span>/gim, '$1' );
 }
 
-function mainwpspin_highlight_spin_nested(content)
-{
+function mainwpspin_highlight_spin_nested( content ) {
 	var lchar = '{', rchar = '}', addStr = '', pos = -1, deep = 0;
 	while (pos++ < content.length) {
 		if (content.substr( pos, lchar.length ) == lchar) {
@@ -262,8 +222,7 @@ function mainwpspin_highlight_spin_nested(content)
 	return content;
 }
 
-function mainwpspin_unhighlight_spin_nested(content)
-{
+function mainwpspin_unhighlight_spin_nested( content ) {
 	var lstr = '<span', rstr = '</span>', removeStr = '', pos = -1, p1 = 0;
 	var checkArr = []; // checking array
 	while (pos++ < content.length) {
@@ -286,172 +245,4 @@ function mainwpspin_unhighlight_spin_nested(content)
 		}
 	}
 	return content;
-}
-
-mainwpspin_hideBox = function (select)
-{
-	jQuery( select ).hide();
-}
-
-mainwpspin_showError = function (select, text)
-{
-	jQuery( select ).html( text );
-	jQuery( select ).show();
-	// automatically scroll to error message if it's not visible
-	var scrolltop = jQuery( window ).scrollTop();
-	var off = jQuery( select ).offset();
-	if (scrolltop > (off.top - 140)) {
-		jQuery( 'html, body' ).animate({
-			scrollTop: off.top - 140
-			}, 1000, function ()
-			{
-				mainwpspin_shake_element( select )
-			});
-	} else {
-		mainwpspin_shake_element( select ); // shake the error message to get attention :)
-	}
-}
-
-mainwpspin_showInformation = function (select, text)
-{
-	jQuery( select ).html( text );
-	jQuery( select ).show();
-	// automatically scroll to error message if it's not visible
-	var scrolltop = jQuery( window ).scrollTop();
-	var off = jQuery( select ).offset();
-	if (scrolltop > (off.top - 140)) {
-		jQuery( 'html, body' ).animate({
-			scrollTop: off.top - 140
-			}, 1000, function ()
-			{
-				mainwpspin_shake_element( select )
-			});
-	} else {
-		mainwpspin_shake_element( select ); // shake the error message to get attention :)
-	}
-}
-
-mainwpspin_shake_element = function (select)
-{
-	var pos = jQuery( select ).position();
-	var type = jQuery( select ).css( 'position' );
-	if (type == 'static') {
-		jQuery( select ).css({
-			position: 'relative'
-		});
-	}
-	if (type == 'static' || type == 'relative') {
-		pos.top = 0;
-		pos.left = 0;
-	}
-	jQuery( select ).data( 'init-type', type );
-	var shake = [
-		[0, 5, 60],
-		[0, 0, 60],
-		[0, -5, 60],
-		[0, 0, 60],
-		[0, 2, 30],
-		[0, 0, 30],
-		[0, -2, 30],
-		[0, 0, 30]
-	];
-	for (s = 0; s < shake.length; s++) {
-		jQuery( select ).animate({
-			top: pos.top + shake[s][0],
-			left: pos.left + shake[s][1]
-		}, shake[s][2], 'linear');
-	}
-}
-
-jQuery( document ).ready(function ($) {
-	jQuery( '.mainwp-show-tut' ).on('click', function () {
-		jQuery( '.mainwp-spin-tut' ).hide();
-		var num = jQuery( this ).attr( 'number' );
-		console.log( num );
-		jQuery( '.mainwp-spin-tut[number="' + num + '"]' ).show();
-		mainwp_setCookie( 'spin_quick_tut_number', jQuery( this ).attr( 'number' ) );
-		return false;
-	});
-
-	jQuery( '#mainwp-spin-quick-start-guide' ).on('click', function () {
-		if (mainwp_getCookie( 'spin_quick_guide' ) == 'on') {
-			mainwp_setCookie( 'spin_quick_guide', '' ); } else {
-			mainwp_setCookie( 'spin_quick_guide', 'on' ); }
-			spin_showhide_quick_guide();
-			return false;
-	});
-	jQuery( '#mainwp-spin-tips-dismiss' ).on('click', function () {
-		mainwp_setCookie( 'spin_quick_guide', '' );
-		spin_showhide_quick_guide();
-		return false;
-	});
-
-	spin_showhide_quick_guide();
-
-	jQuery( '#mainwp-spin-dashboard-tips-dismiss' ).on('click', function () {
-		$( this ).closest( '#mainwp-spin-tips' ).hide();
-		mainwp_setCookie( 'spin_dashboard_notice', 'hide', 2 );
-		return false;
-	});
-
-});
-
-spin_showhide_quick_guide = function (show, tut) {
-	var show = mainwp_getCookie( 'spin_quick_guide' );
-	var tut = mainwp_getCookie( 'spin_quick_tut_number' );
-
-	if (show == 'on') {
-		jQuery( '#mainwp-spin-tips' ).show();
-		jQuery( '#mainwp-spin-quick-start-guide' ).hide();
-		spin_showhide_quick_tut();
-	} else {
-		jQuery( '#mainwp-spin-tips' ).hide();
-		jQuery( '#mainwp-spin-quick-start-guide' ).show();
-	}
-
-	if ('hide' == mainwp_getCookie( 'spin_dashboard_notice' )) {
-		jQuery( '#mainwp-spin-dashboard-tips-dismiss' ).closest( '#mainwp-spin-tips' ).hide();
-	}
-}
-
-spin_showhide_quick_tut = function () {
-	var tut = mainwp_getCookie( 'spin_quick_tut_number' );
-	jQuery( '.mainwp-spin-tut' ).hide();
-	jQuery( '.mainwp-spin-tut[number="' + tut + '"]' ).show();
-}
-
-
-
-jQuery( document ).ready(function($) {
-	mainwp_spinner_check_showhide_sections();
-
-	$( '.mainwp_spinner_postbox .handlediv' ).live('click', function(){
-		var pr = $( this ).parent();
-		if (pr.hasClass( 'closed' )) {
-			mainwp_spinner_set_showhide_section( pr, true ); } else { 			mainwp_spinner_set_showhide_section( pr, false ); }
-	});
-});
-
-mainwp_spinner_set_showhide_section = function(obj, show) {
-	var sec = obj.attr( 'section' );
-	if (show) {
-		obj.removeClass( 'closed' );
-		mainwp_setCookie( 'mainwp_spinner_showhide_section_' + sec, 'show' );
-	} else {
-		obj.addClass( 'closed' );
-		mainwp_setCookie( 'mainwp_spinner_showhide_section_' + sec, '' );
-	}
-}
-
-mainwp_spinner_check_showhide_sections = function() {
-	var pr, sec;
-	jQuery( '.mainwp_spinner_postbox .handlediv' ).each(function() {
-		pr = jQuery( this ).parent();
-		sec = pr.attr( 'section' );
-		if (mainwp_getCookie( 'mainwp_spinner_showhide_section_' + sec ) == 'show') {
-			mainwp_spinner_set_showhide_section( pr, true );
-		} else {
-			mainwp_spinner_set_showhide_section( pr, false );
-		}
-	});
 }
