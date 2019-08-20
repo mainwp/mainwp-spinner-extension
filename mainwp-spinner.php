@@ -3,7 +3,7 @@
   Plugin Name: MainWP Spinner
   Plugin URI: https://mainwp.com
   Description: MainWP Extension Plugin allows words to spun {|} when when adding articles and posts to your blogs. Requires the installation of MainWP Main Plugin.
-  Version: 4.0-beta2.0
+  Version: 4.0-RC2
   Author: MainWP
   Author URI: https://mainwp.com
   Documentation URI: https://mainwp.com/help/category/mainwp-extensions/spinner/
@@ -59,6 +59,11 @@ class MainWP_Spinner {
 		$this->option = get_option( $this->option_handle );
 		$this->load_modules();
 
+
+		add_filter( 'mainwp-pre-posting-posts', array( &$this, 'pre_bulkpost_posting' ) );
+		add_filter( 'mainwp-spinner-is-enabled', array( &$this, 'is_enabled' ) );
+		add_filter( 'mainwparticle-spin-text', array( &$this, 'filter_spin_text' ) );
+
 		add_filter( 'the_title', array( &$this, 'filter_title' ), 0, 2 );
 		add_filter( 'the_posts', array( &$this, 'filter_posts' ) );
 		add_filter( 'single_post_title', array( &$this, 'filter_title' ), 0, 2 );
@@ -89,10 +94,12 @@ class MainWP_Spinner {
 		add_filter( 'mce_buttons', array( &$this, 'mce_button' ) );
 
 		// add this action to support spin dripper
-		add_action( 'mainwp_dripper_update_post_meta', array( &$this, 'spinner_update_post_meta' ), 10, 2 );
+		//add_action( 'mainwp_dripper_update_post_meta', array( &$this, 'spinner_update_post_meta' ), 10, 2 );
 		// add this action to support spin boilerplate
-		add_action( 'mainwp_boilerplate_update_post_meta', array( &$this, 'spinner_update_post_meta' ), 10, 2 );
+		//add_action( 'mainwp_boilerplate_update_post_meta', array( &$this, 'spinner_update_post_meta' ), 10, 2 );
 
+        add_action( 'mainwp_save_bulkpost', array( &$this, 'spinner_save_bulkpost' ), 10 ,1 );
+        add_action( 'mainwp_save_bulkpage', array( &$this, 'spinner_save_bulkpost' ), 10, 1 );
 	}
 
 	public function plugin_row_meta( $plugin_meta, $plugin_file ) {
@@ -131,12 +138,12 @@ class MainWP_Spinner {
 		}
 	}
 
-	function spinner_update_post_meta( $post, $post_type ) {
-		if ( ! $post ) {
-			return; }
-		if ( $post->post_type == $post_type ) {
-			update_post_meta( $post->ID, '_mainwp_spin_me', 'yes' );
-		}
+	function spinner_save_bulkpost( $post_id ) {
+		if ( ! $post_id ) {
+			return;
+        }
+
+        update_post_meta( $post_id, '_mainwp_spin_me', 'yes' );
 	}
 
 	public function option_page() {
@@ -655,19 +662,23 @@ class MainWP_Spinner {
 		return $filtered_posts;
 	}
 
-	public function filter_bulkpost_data( $post_data ) {
-		$new_post = unserialize( base64_decode( $post_data['new_post'] ) );
+    // spin content and title before posting
+	public function pre_bulkpost_posting( $post_data ) {
+
+        $new_post = unserialize( base64_decode( $post_data['new_post'] ) );
+        $post_id = ( is_array( $new_post ) && isset( $new_post['mainwp_post_id'] ) ) ? $new_post['mainwp_post_id'] : 0;
 
 		$spin_me = '';
-		if ( is_array( $new_post ) && isset( $new_post['mainwp_post_id'] ) && $pid = $new_post['mainwp_post_id'] ) {
-			$spin_me = get_post_meta( $pid, '_mainwp_spin_me', true );
+		if ( $post_id ) {
+			$spin_me = get_post_meta( $post_id, '_mainwp_spin_me', true );
 		}
 
-		if ( is_array( $new_post ) && ((isset( $new_post['id_spin'] ) && intval( $new_post['id_spin'] ) > 0) || 'yes' === $spin_me ) ) {
+		if ( !empty($spin_me) && 'yes' === $spin_me ) {
 			$new_post['post_title'] = $this->parse_spin_text( $new_post['post_title'] );
 			$new_post['post_content'] = $this->parse_spin_text( $new_post['post_content'] );
 			$post_data['new_post'] = base64_encode( serialize( $new_post ) );
 		}
+
 		return $post_data;
 	}
 
@@ -798,7 +809,7 @@ class MainWPSpinActivator {
 	protected $childEnabled = false;
 	protected $plugin_handle = 'mainwp-spinner';
 	protected $product_id = 'MainWP Spinner';
-	protected $software_version = '4.0-beta2.0';
+	protected $software_version = '4.0';
 
 	public function __construct() {
 		$this->mainwpMainActivated = false;
@@ -844,11 +855,7 @@ class MainWPSpinActivator {
 		if ( function_exists( 'mainwp_current_user_can' ) && ! mainwp_current_user_can( 'extension', 'mainwp-spinner' ) ) {
 			return;
 		}
-		$mainwp_spin = MainWP_Spinner::get_instance();
-
-		add_filter( 'mainwp-pre-posting-posts', array( &$mainwp_spin, 'filter_bulkpost_data' ) );
-		add_filter( 'mainwp-spinner-is-enabled', array( &$mainwp_spin, 'is_enabled' ) );
-		add_filter( 'mainwparticle-spin-text', array( &$mainwp_spin, 'filter_spin_text' ) );
+		MainWP_Spinner::get_instance();
 	}
 
 	function mainwp_error_notice() {

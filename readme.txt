@@ -2,7 +2,7 @@
 Plugin Name: MainWP Spinner Extension
 Plugin URI: https://mainwp.com
 Description: MainWP Spinner Extension allows words to spun {|} when when adding articles and posts to your blogs. Requires the installation of MainWP Main Plugin.
-Version: 4.0-beta2.0
+Version: 4.0
 Author: MainWP
 Author URI: https://mainwp.com
 
