@@ -3,7 +3,7 @@
   Plugin Name: MainWP Spinner
   Plugin URI: https://mainwp.com
   Description: MainWP Extension Plugin allows words to spun {|} when when adding articles and posts to your blogs. Requires the installation of MainWP Main Plugin.
-  Version: 2.5
+  Version: 4.0
   Author: MainWP
   Author URI: https://mainwp.com
   Documentation URI: https://mainwp.com/help/category/mainwp-extensions/spinner/
@@ -17,7 +17,6 @@ class MainWP_Spinner {
 	private static $instance = null;
 	public $plugin_name = 'MainWP Spinner';
 	public $plugin_handle = 'mainwp-spinner';
-	public $spinners = array( 'bs' => 'The Best Spinner', 'sc' => 'Spinnerchief', 'cr' => 'Chimp Rewriter', 'wai' => 'WordAi', 'srw' => 'Spin Rewriter' );
 	public $plugin_dir;
 	protected $plugin_url;
 	protected $plugin_admin = '';
@@ -27,6 +26,13 @@ class MainWP_Spinner {
 	protected $bs_session = '';
 	protected $bs_api_url = 'http://thebestspinner.com/api.php';
 	private $plugin_slug;
+	public $spinners = array(
+		'bs'  => 'The Best Spinner',
+		'sc'  => 'Spinnerchief',
+		'cr'  => 'Chimp Rewriter',
+		'wai' => 'WordAi',
+		'srw' => 'Spin Rewriter'
+	);
 
 	/**
 	 * @static
@@ -51,8 +57,12 @@ class MainWP_Spinner {
 		add_filter( 'plugin_row_meta', array( &$this, 'plugin_row_meta' ), 10, 2 );
 		add_action( 'after_plugin_row', array( &$this, 'after_plugin_row' ), 10, 3 );
 		$this->option = get_option( $this->option_handle );
-		$this->load_modules(); // load all module
-		// hook
+		$this->load_modules();
+
+
+		add_filter( 'mainwp-pre-posting-posts', array( &$this, 'pre_bulkpost_posting' ) );
+		add_filter( 'mainwp-spinner-is-enabled', array( &$this, 'is_enabled' ) );
+		add_filter( 'mainwparticle-spin-text', array( &$this, 'filter_spin_text' ) );
 
 		add_filter( 'the_title', array( &$this, 'filter_title' ), 0, 2 );
 		add_filter( 'the_posts', array( &$this, 'filter_posts' ) );
@@ -63,20 +73,18 @@ class MainWP_Spinner {
 	public function localization() {
 		load_plugin_textdomain( 'mainwp-spinner', false,  dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
 	}
-	
+
 	public function admin_init() {
 		wp_enqueue_style( $this->plugin_handle . '-admin-css', $this->plugin_url . 'css/admin.css' );
 		wp_enqueue_script( $this->plugin_handle . '-admin-js', $this->plugin_url . 'js/admin.js' );
 
-		// Check if a save option is called
 		$this->save_option();
-		//wp_enqueue_script('thickbox');
-		// hook
-		/* add_meta_box('mainwpspin', __("MainWP Spinner Option"), array(&$this, 'metabox'), 'post', 'normal', 'high'); */
-		add_meta_box( 'mainwpspin', __( 'MainWP Spinner Options', 'mainwp-spinner' ), array( &$this, 'metabox' ), 'bulkpost', 'normal', 'high' );
-		add_meta_box( 'mainwpspin', __( 'MainWP Spinner Options', 'mainwp-spinner' ), array( &$this, 'metabox' ), 'bulkpage', 'normal', 'high' );
 
-		//add_action('post_submitbox_misc_actions', array(&$this, 'submitbox'));
+//		add_meta_box( 'mainwpspin', __( 'MainWP Spinner Options', 'mainwp-spinner' ), array( &$this, 'metabox' ), 'bulkpost', 'normal', 'high' );
+//		add_meta_box( 'mainwpspin', __( 'MainWP Spinner Options', 'mainwp-spinner' ), array( &$this, 'metabox' ), 'bulkpage', 'normal', 'high' );
+
+        add_action( 'mainwp_bulkpost_edit', array( &$this, 'spinner_metabox' ), 10, 2 );
+
 		add_action( 'save_post', array( &$this, 'save_post' ), 9 );
 		add_action( 'wp_ajax_spin_post', array( &$this, 'ajax_spin_post' ) );
 		add_action( 'wp_ajax_spin_text', array( &$this, 'ajax_single_spin_text' ) );
@@ -86,55 +94,56 @@ class MainWP_Spinner {
 		add_filter( 'mce_buttons', array( &$this, 'mce_button' ) );
 
 		// add this action to support spin dripper
-		add_action( 'mainwp_dripper_update_post_meta', array( &$this, 'spinner_update_post_meta' ), 10, 2 );
+		//add_action( 'mainwp_dripper_update_post_meta', array( &$this, 'spinner_update_post_meta' ), 10, 2 );
 		// add this action to support spin boilerplate
-		add_action( 'mainwp_boilerplate_update_post_meta', array( &$this, 'spinner_update_post_meta' ), 10, 2 );
+		//add_action( 'mainwp_boilerplate_update_post_meta', array( &$this, 'spinner_update_post_meta' ), 10, 2 );
 
+        add_action( 'mainwp_save_bulkpost', array( &$this, 'spinner_save_bulkpost' ), 10 ,1 );
+        add_action( 'mainwp_save_bulkpage', array( &$this, 'spinner_save_bulkpost' ), 10, 1 );
 	}
 
 	public function plugin_row_meta( $plugin_meta, $plugin_file ) {
 		if ( $this->plugin_slug != $plugin_file ) {
 			return $plugin_meta; }
-			
-		$slug = basename($plugin_file, ".php");
-		$api_data = get_option( $slug. '_APIManAdder');		
-		if (!is_array($api_data) || !isset($api_data['activated_key']) || $api_data['activated_key'] != 'Activated' || !isset($api_data['api_key']) || empty($api_data['api_key']) ) {
+
+		$slug = basename( $plugin_file, ".php" );
+		$api_data = get_option( $slug. '_APIManAdder' );
+		if (  !is_array( $api_data ) || !isset( $api_data['activated_key'] ) || $api_data['activated_key'] != 'Activated' || !isset( $api_data['api_key'] ) || empty( $api_data['api_key'] ) ) {
 			return $plugin_meta;
 		}
-		
+
 		$plugin_meta[] = '<a href="?do=checkUpgrade" title="Check for updates.">Check for updates now</a>';
 		return $plugin_meta;
 	}
-	
-	public function after_plugin_row( $plugin_file, $plugin_data, $status ) {	
+
+	public function after_plugin_row( $plugin_file, $plugin_data, $status ) {
 		if ( $this->plugin_slug != $plugin_file ) {
 			return ;
-		}	
+		}
 		$slug = basename($plugin_file, ".php");
 		$api_data = get_option( $slug. '_APIManAdder');
-		
-		if (!is_array($api_data) || !isset($api_data['activated_key']) || $api_data['activated_key'] != 'Activated'){
-			if (!isset($api_data['api_key']) || empty($api_data['api_key'])) {
+
+		if ( !is_array( $api_data ) || !isset( $api_data['activated_key'] ) || $api_data['activated_key'] != 'Activated' ) {
+			if ( !isset( $api_data['api_key'] ) || empty( $api_data['api_key'] ) ) {
 				?>
-				<style type="text/css">
-					tr#<?php echo $slug;?> td, tr#<?php echo $slug;?> th{
-						box-shadow: none;
-					}
-				</style>
-				<tr class="plugin-update-tr active"><td colspan="3" class="plugin-update colspanchange"><div class="update-message api-deactivate">
-				<?php echo (sprintf(__("API not activated check your %sMainWP account%s for updates. For automatic update notification please activate the API.", "mainwp"), '<a href="https://mainwp.com/my-account" target="_blank">', '</a>')); ?>
-				</div></td></tr>
+				<tr class="plugin-update-tr active">
+					<td colspan="3" class="plugin-update colspanchange">
+						<div class="update-message api-deactivate">
+							<?php echo ( sprintf( __( "API not activated check your %sMainWP account%s for updates. For automatic update notification please activate the API.", "mainwp" ), '<a href="https://mainwp.com/my-account" target="_blank">', '</a>' ) ); ?>
+						</div>
+					</td>
+				</tr>
 				<?php
 			}
-		}		
-	}	
-
-	function spinner_update_post_meta( $post, $post_type ) {
-		if ( ! $post ) {
-			return; }
-		if ( $post->post_type == $post_type ) {
-			update_post_meta( $post->ID, '_mainwp_spin_me', 'yes' );
 		}
+	}
+
+	function spinner_save_bulkpost( $post_id ) {
+		if ( ! $post_id ) {
+			return;
+        }
+
+        update_post_meta( $post_id, '_mainwp_spin_me', 'yes' );
 	}
 
 	public function option_page() {
@@ -277,13 +286,8 @@ class MainWP_Spinner {
 		return update_option( $this->option_handle, $this->option );
 	}
 
-	public function metabox( $post ) {
-
+	public function spinner_metabox( $post, $post_type ) {
 		include $this->plugin_dir . '/includes/metabox.php';
-	}
-
-	public function submitbox( $post ) {
-		//include $this->plugin_dir . '/includes/submitbox.php';
 	}
 
 	public function save_post( $post_id ) {
@@ -351,13 +355,16 @@ class MainWP_Spinner {
 
 	public function ajax_spin_post() {
 		if ( ! wp_verify_nonce( $_POST['nonce'], $this->plugin_handle ) ) {
-			return; }
+			return;
+		}
 		$post_id = intval( $_POST['post_id'] );
 		if ( $post_id < 1 ) {
-			return; }
+			return;
+		}
 		$post = get_post( $post_id );
 		if ( ! $post ) {
-			return; }
+			return;
+		}
 		$sp = $_POST['sp_spinner'];
 		$this->modules[ $sp ]->spin( $post );
 	}
@@ -376,7 +383,7 @@ class MainWP_Spinner {
 	public function spin_text( $text, $params ) {
 		try {
 			return $this->modules[ $this->option['sp_spinner'] ]->spin_text( $text, $params );
-		} catch (Exception $e) {
+		} catch ( Exception $e ) {
 
 		}
 		return $text;
@@ -391,23 +398,23 @@ class MainWP_Spinner {
 		$mess = '';
 		try {
 			$spun_text = $this->modules[ $sp ]->single_spin_text( $text );
-		} catch (Exception $e) {
+		} catch ( Exception $e  ) {
 			$spun_text = $text;
 			$success = 0;
 			$mess = $e->getMessage();
 		}
-		echo (json_encode(array(
-			'success' => $success,
-			'text' => $mess,
+		echo ( json_encode( array(
+			'success' 	=> $success,
+			'text' 			=> $mess,
 			'spun_text' => $spun_text,
-		)));
+		) ) );
 		exit;
 	}
 
 	public function ajax_test_spin() {
 		$this->set_option( 'sp_spinner', $_POST['sp_spinner'] );
 		$this->set_option( 'sp_message', '' ); // clear message
-		//		
+		//
 		// test authenticate before to reduce request
 		if ( 'wai' == $_POST['sp_spinner'] || 'srw' == $_POST['sp_spinner'] ) {
 			$this->test_spin();
@@ -655,40 +662,44 @@ class MainWP_Spinner {
 		return $filtered_posts;
 	}
 
-	public function filter_bulkpost_data( $post_data ) {
-		$new_post = unserialize( base64_decode( $post_data['new_post'] ) );
+    // spin content and title before posting
+	public function pre_bulkpost_posting( $post_data ) {
+
+        $new_post = unserialize( base64_decode( $post_data['new_post'] ) );
+        $post_id = ( is_array( $new_post ) && isset( $new_post['mainwp_post_id'] ) ) ? $new_post['mainwp_post_id'] : 0;
 
 		$spin_me = '';
-		if ( is_array( $new_post ) && isset( $new_post['mainwp_post_id'] ) && $pid = $new_post['mainwp_post_id'] ) {
-			$spin_me = get_post_meta( $pid, '_mainwp_spin_me', true );
+		if ( $post_id ) {
+			$spin_me = get_post_meta( $post_id, '_mainwp_spin_me', true );
 		}
 
-		if ( is_array( $new_post ) && ((isset( $new_post['id_spin'] ) && intval( $new_post['id_spin'] ) > 0) || 'yes' === $spin_me ) ) {
+		if ( !empty($spin_me) && 'yes' === $spin_me ) {
 			$new_post['post_title'] = $this->parse_spin_text( $new_post['post_title'] );
 			$new_post['post_content'] = $this->parse_spin_text( $new_post['post_content'] );
 			$post_data['new_post'] = base64_encode( serialize( $new_post ) );
 		}
+
 		return $post_data;
 	}
 
-	function parse_spin_text( $data ) {	
+	function parse_spin_text( $data ) {
 		$leftchar = '{';
 		$rightchar = '}';
 		$splitchar = '|';
 		$start_pos = array();
 		$pos = -1;
-		while ( $pos++ < strlen( $data ) ) {			
-			if ( substr( $data, $pos, strlen( $leftchar ) ) == $leftchar ) {				
+		while ( $pos++ < strlen( $data ) ) {
+			if ( substr( $data, $pos, strlen( $leftchar ) ) == $leftchar ) {
 				$start_pos[] = $pos;
-			} elseif ( substr( $data, $pos, strlen( $rightchar ) ) == $rightchar ) {				
+			} elseif ( substr( $data, $pos, strlen( $rightchar ) ) == $rightchar ) {
 				if ( count($start_pos) > 0 ) {
-					$startPos = array_pop( $start_pos ); 
-					$entirespinner = substr( $data, $startPos + strlen( $leftchar ), ($pos - $startPos) - strlen( $rightchar ) );				
+					$startPos = array_pop( $start_pos );
+					$entirespinner = substr( $data, $startPos + strlen( $leftchar ), ($pos - $startPos) - strlen( $rightchar ) );
 					$syn = explode( $splitchar, $entirespinner );
 					$processed = $syn[ array_rand( $syn ) ];
 					$data = str_replace( $leftchar . $entirespinner . $rightchar, $processed, $data );
-					$pos = $startPos;													
-				}				
+					$pos = $startPos;
+				}
 			}
 		}
 		return $data;
@@ -717,36 +728,30 @@ class MainWP_Spinner {
 	}
 
 	protected function create_option_field( $name, $label, $type, $default = null, $fields = null, $description = null, $inline = false, $specialchars = false, $single_checkbox = false, $check_option_value = true, $extra = array() ) {
-		echo '<div class="spinner_option-list">';
-		echo '<label for="' . $name . '">' . $label . '</label>';
-		echo '<div class="spinner_option-field">';
+		echo '<div class="ui grid field">';
+		echo '<label class="six wide column middle aligned">' . $label . '</label>';
+		echo '<div class="ten wide column">';
 		switch ( $type ) {
 			case 'text':
 			case 'password':
 				$style = '';
-				if ( isset( $extra['width'] ) && ! empty( $extra['width'] ) ) {
-					$style = 'style="width: ' . $extra['width'] . ';"'; }
 				echo '<input type="' . $type . '" class="text" ' . $style . ' name="' . $name . '" id="' . $name . '" value="' . ( ! is_null( $default ) && ! $this->get_option( $name ) ? $default : $this->get_option( $name )) . '" />';
-				break;
-
-			case 'file':
-				echo '<input type="' . $type . '" name="' . $name . '" id="' . $name . '" />';
-				break;
+			break;
 
 			case 'textarea':
 				if ( $specialchars ) {
 					$value = htmlspecialchars( $this->get_option( $name ) ); } else {
 					$value = $this->get_option( $name ); }
 					echo '<textarea class="text" rows="5" cols="50" name="' . $name . '" id="' . $name . '">' . ( ! is_null( $default ) && ! $this->get_option( $name ) ? $default : $value) . '</textarea>';
-				break;
+			break;
 
 			case 'select':
-				echo '<select name="' . $name . '" id="' . $name . '">';
+				echo '<select name="' . $name . '" id="' . $name . '" class="ui dropdown">';
 				foreach ( (array) $fields as $val => $field ) {
 					echo '<option value="' . $val . '" ' . ( $this->get_option( $name ) == $val || ( ! is_null( $default ) && $this->get_option( $name ) === '' && $default == $val ) ? 'selected="selected"' : '' ) . '>' . $field . '</option>';
 				}
 				echo '</select>';
-				break;
+			break;
 
 			case 'checkbox':
 				if ( ! $single_checkbox ) {
@@ -757,25 +762,16 @@ class MainWP_Spinner {
 						$checked = ( (null !== $default) && ('' !== $default) && ($val == $default) ) ? 'checked="checked"' : '';
 					} else {
 						$checked = ( in_array( $val, (array) $this->get_option( $name ) ) || ( is_array( $default ) && $this->get_option( $name ) === '' && in_array( $val, $default ) ) ? 'checked="checked"' : '' ); }
-					echo '<label>';
+					echo '<div class="ui toggle checkbox">';
 					echo '<input type="checkbox" name="' . $name . '" value="' . $val . '" ' . $checked . ' /> ';
-					echo $field;
-					echo '</label><br />';
+					echo '<label>' . $field . '</label>';
+					echo '</div>';
 				}
-				break;
-
-			case 'radio':
-				foreach ( (array) $fields as $val => $field ) {
-					echo '<label>';
-					echo '<input type="radio" name="' . $name . '" value="' . $val . '" ' . ( $val == $this->get_option( $name ) || ( ! is_null( $default ) && $this->get_option( $name ) === '' && $val == $default ) ? 'checked="checked"' : '' ) . ' /> ';
-					echo $field;
-					echo '</label><br />';
-				}
-				break;
+			break;
 		}
 		if ( ! is_null( $description ) ) {
 			if ( ! $inline ) {
-				echo '<br />'; 
+				echo '<br />';
 			}
 			echo '<small><em>' . $description . '</em></small>';
 		}
@@ -791,7 +787,7 @@ class MainWP_Spinner {
 class MainWPSpinLoginFailed_Exception extends Exception {
 
 	public function __construct() {
-		parent::__construct( 'Login has failed. Automatic Spin could not be completed. Please check the login in the Settings page.' );
+		parent::__construct( __( 'Login failed. Spin process could not be completed. Please review the extension settings and try again.', 'mainwp-spinner' ) );
 	}
 }
 
@@ -799,26 +795,13 @@ class MainWPSpinSpinFailed_Exception extends Exception {
 
 	public function __construct( $message = '' ) {
 		if ( empty( $message ) ) {
-			parent::__construct( 'Automatic Spin could not be completed. Please check the login in the Settings page.' );
+			parent::__construct( __( 'Spin process could not be completed. Please review the extension settings and try again.', 'mainwp-spinner' ) );
 		} else {
 			parent::__construct( $message );
 		}
 	}
 }
 
-register_activation_hook( __FILE__, 'mainwp_spin_extension_activate' );
-register_deactivation_hook( __FILE__, 'mainwp_spin_extension_deactivate' );
-
-function mainwp_spin_extension_activate() {
-	update_option( 'mainwp_spin_extension_activated', 'yes' );
-	$extensionActivator = new MainWPSpinActivator();
-	$extensionActivator->activate();	
-}
-
-function mainwp_spin_extension_deactivate() {
-	$extensionActivator = new MainWPSpinActivator();
-	$extensionActivator->deactivate();
-}
 
 class MainWPSpinActivator {
 
@@ -826,31 +809,32 @@ class MainWPSpinActivator {
 	protected $childEnabled = false;
 	protected $plugin_handle = 'mainwp-spinner';
 	protected $product_id = 'MainWP Spinner';
-	protected $software_version = '2.5';
+	protected $software_version = '4.0';
 
 	public function __construct() {
 		$this->mainwpMainActivated = false;
+
+        register_activation_hook( __FILE__, array($this, 'activate') );
+        register_deactivation_hook( __FILE__, array($this, 'deactivate') );
+
 		$this->mainwpMainActivated = apply_filters( 'mainwp-activated-check', $this->mainwpMainActivated );
 		if ( $this->mainwpMainActivated !== false ) {
 			$this->activate_this_extension();
 		} else {
 			add_action( 'mainwp-activated', array( &$this, 'activate_this_extension' ) );
 		}
-		add_action( 'admin_init', array( &$this, 'admin_init' ) );
 		add_action( 'admin_notices', array( &$this, 'mainwp_error_notice' ) );
 		add_filter( 'mainwp-getextensions', array( &$this, 'get_this_extension' ) );
 	}
 
-	function admin_init() {
-		if ( get_option( 'mainwp_spin_extension_activated' ) == 'yes' ) {
-			delete_option( 'mainwp_spin_extension_activated' );
-			wp_redirect( admin_url( 'admin.php?page=Extensions' ) );
-			return;
-		}
-	}
-
 	function get_this_extension( $pArray ) {
-		$pArray[] = array( 'plugin' => __FILE__, 'api' => $this->plugin_handle, 'mainwp' => true, 'callback' => array( &$this, 'settings' ), 'apiManager' => true );
+		$pArray[] = array(
+			'plugin' 			=> __FILE__,
+			'api' 				=> $this->plugin_handle,
+			'mainwp' 			=> true,
+			'callback' 		=> array( &$this, 'settings' ),
+			'apiManager'  => true
+		);
 		return $pArray;
 	}
 
@@ -860,35 +844,8 @@ class MainWPSpinActivator {
 		$extraHeaders = array( 'DocumentationURI' => 'Documentation URI' );
 		$file_data = get_file_data( MAINWP_SPINNER_PLUGIN_FILE, $extraHeaders );
 		$documentation_url = $file_data['DocumentationURI'];
-		do_action( 'mainwp-pageheader-extensions', __FILE__ );		
-		?>
-		<div class="mainwp_ext_info_box">
-			<div class="mainwp-ext-description"><?php echo $description; ?></div><br/>
-			<b><?php echo __( 'Need Help?' ); ?></b> <?php echo __( 'Review the Extension' ); ?> <a href="<?php echo $documentation_url; ?>" target="_blank"><i class="fa fa-book"></i> <?php echo __( 'Documentation' ); ?></a>. 
-			<a href="#" id="mainwp-spin-quick-start-guide"><i class="fa fa-info-circle"></i> <?php _e( 'Show Quick Start Guide', 'mainwp' ); ?></a></div>
-		<div class="mainwp_ext_info_box" id="mainwp-spin-tips" style="color: #333!important; text-shadow: none!important;">
-			<span><a href="#" class="mainwp-show-tut" number="1"><i class="fa fa-book"></i> <?php _e( 'How to Spin Articles', 'mainwp-spinner' ) ?></a>&nbsp;&nbsp;&nbsp;&nbsp;<a href="#" id="mainwp-spin-tips-dismiss" style="float: right;"><i class="fa fa-times-circle"></i> <?php _e( 'Dismiss', 'mainwp' ); ?></a></span>
-			<div class="clear"></div>
-			<div id="mainwp-spin-tuts">
-				<div class="mainwp-spin-tut" number="1">
-					<h3>How to Spin Articles</h3>
-					<p>When youâ€™re writing articles or page content for your blogs, with installed MainWP Spinning extension you have new options added in Add New Post and Add New Page pages.</p>
-					<img src="http://docs.mainwp.com/wp-content/uploads/2013/06/new-spin-widget.jpg">
-					<p>To use the Single Spin button, select a word, part of a text or whole text you wrote and click the button.</p>
-					<p>For example, if you enter word â€œcomputerâ€� and click Single Spin, you will get few synonyms for your word.</p>
-					<img src="http://docs.mainwp.com/wp-content/uploads/2013/06/new-spinned-1024x224.jpg">
-					<p>After posting this in few of your site, in one site you will see word, in second some other word, in third one other synonym,</p>
-					<p>If you want to use Full Article Spinner, after writing your article, in MainWP Spinner Options box.</p>
-					<p>Set maximum synonyms per term, replacement quality,</p>
-					<p>Enter words you donâ€™t want to spin,</p>
-					<p>Select whether you like to spin Post Title,</p>
-					<p>Click the Spin Now button.</p>
-					<p>After spinning is done, select sites to post article to and click Publish.</p>
-				</div>
-			</div>
-		</div>
-		<?php
-		MainWP_Spinner::get_instance()->option_page();		
+		do_action( 'mainwp-pageheader-extensions', __FILE__ );
+		MainWP_Spinner::get_instance()->option_page();
 		do_action( 'mainwp-pagefooter-extensions', __FILE__ );
 	}
 
@@ -896,13 +853,9 @@ class MainWPSpinActivator {
 		$this->mainwpMainActivated = apply_filters( 'mainwp-activated-check', $this->mainwpMainActivated );
 		$this->childEnabled = apply_filters( 'mainwp-extension-enabled-check', __FILE__ );
 		if ( function_exists( 'mainwp_current_user_can' ) && ! mainwp_current_user_can( 'extension', 'mainwp-spinner' ) ) {
-			return; 			
+			return;
 		}
-		$mainwp_spin = MainWP_Spinner::get_instance();
-
-		add_filter( 'mainwp-pre-posting-posts', array( &$mainwp_spin, 'filter_bulkpost_data' ) );
-		add_filter( 'mainwp-spinner-is-enabled', array( &$mainwp_spin, 'is_enabled' ) );
-		add_filter( 'mainwparticle-spin-text', array( &$mainwp_spin, 'filter_spin_text' ) );
+		MainWP_Spinner::get_instance();
 	}
 
 	function mainwp_error_notice() {
@@ -914,32 +867,17 @@ class MainWPSpinActivator {
 		}
 	}
 
-	public function update_option( $option_name, $option_value ) {
-		$success = add_option( $option_name, $option_value, '', 'no' );
-
-		if ( ! $success ) {
-			$success = update_option( $option_name, $option_value );
-		}
-
-		return $success;
-	}
-
 	public function activate() {
 		$options = array(
-		'product_id' => $this->product_id,
-			'activated_key' => 'Deactivated',
-			'instance_id' => apply_filters( 'mainwp-extensions-apigeneratepassword', 12, false ),
+            'product_id' => $this->product_id,
 			'software_version' => $this->software_version,
 		);
-		$this->update_option( $this->plugin_handle . '_APIManAdder', $options );
+        do_action( 'mainwp_activate_extention', $this->plugin_handle , $options );
 	}
 
 	public function deactivate() {
-		$this->update_option( $this->plugin_handle . '_APIManAdder', '' );
+        do_action( 'mainwp_deactivate_extention', $this->plugin_handle );
 	}
 }
 
 new MainWPSpinActivator();
-
-
-

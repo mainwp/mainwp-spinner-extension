@@ -1,11 +1,11 @@
 /**
  * MainWP Article Poster plugin
  */
-(function () {
+( function () {
 	jQuery( '#infobox-spin' ).insertBefore( '#poststuff' );
 	jQuery( '#errorbox-spin' ).insertBefore( '#poststuff' );
 	var DOM = tinymce.DOM;
-	tinymce.create('tinymce.plugins.mainwparticle', {
+	tinymce.create( 'tinymce.plugins.mainwparticle', {
 		mceTout: 0,
 		init: function (ed, url) {
 			ed.onInit.add(function (ed) {
@@ -35,9 +35,9 @@
 				}
 			});
 
-			ed.addButton('mainwparticle', {
+			ed.addButton( 'mainwparticle', {
 				title: 'Single Spin',
-				image: url + '/images/single-spin.png',
+				image: url + '<i class="sync icon"></i>',
 				onclick: function () {
 					/*  var selection = ed.selection.getContent({format: 'text'});  */
 					var selection = ed.selection.getContent( {format: 'raw'} );
@@ -58,14 +58,11 @@
 					jQuery.post(ajaxurl, send_fields, function (obj) {
 						if (obj.success == 0) {
 							/* jQuery("div#poststuff").before('<div class="updated below-h2"><p>'+obj.text+'</p></div>');		 */
-							jQuery( "div#poststuff" ).before( '<div id="message_error"></div>' );
-							jQuery( "div#message_error" ).append( '<div class="updated below-h2 message_error"><p>' + obj.text + '</div>' );
+							jQuery( "#mainwp-message-zone" ).html( '<i class="close icon"></i> ' + obj.text  );
 							setTimeout(function () {
-								jQuery( ".message_error" ).remove();
-								jQuery( "div#message_error" ).remove();
+								jQuery( "#mainwp-message-zone" ).fadeOut();
 							}, 5000);
-
-							/* mainwpspin_showError('#errorbox-spin', obj.text);                   */
+                 
 							return;
 						}
 						//ed.selection.setContent(mainwpspin_highlight_spin(obj.spun_text));
