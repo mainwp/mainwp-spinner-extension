@@ -3,7 +3,7 @@
   Plugin Name: MainWP Spinner
   Plugin URI: https://mainwp.com
   Description: MainWP Extension Plugin allows words to spun {|} when when adding articles and posts to your blogs. Requires the installation of MainWP Main Plugin.
-  Version: 4.0
+  Version: 4.0.1
   Author: MainWP
   Author URI: https://mainwp.com
   Documentation URI: https://mainwp.com/help/category/mainwp-extensions/spinner/
@@ -290,9 +290,9 @@ class MainWP_Spinner {
 
 	public function save_post( $post_id ) {
 		if ( !isset($_POST['mainwpspin_nonce']) || ! wp_verify_nonce( $_POST['mainwpspin_nonce'], $this->plugin_handle ) ) {
-			return; 			
+			return;
 		}
-		
+
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
 			return $post_id; }
 		if ( ! current_user_can( 'edit_post', $post_id ) ) {
@@ -354,19 +354,19 @@ class MainWP_Spinner {
 	}
 
 	public function ajax_spin_post() {
-		
+
 		if ( ! wp_verify_nonce( $_POST['nonce'], $this->plugin_handle ) ) {
 			return;
 		}
-		
+
 		$post_id = intval( $_POST['post_id'] );
-		
+
 		if ( $post_id < 1 ) {
 			return;
-		}	
-		
+		}
+
 		$post = get_post( $post_id );
-					
+
 		if ( ! $post ) {
 			return;
 		}
@@ -374,12 +374,12 @@ class MainWP_Spinner {
 		// to fix
 		$post->post_title = $_POST[ 'title' ];
 		$post->post_content = $_POST[ 'content' ];
-		
+
 		$sp = $_POST['sp_spinner'];
 		$this->modules[ $sp ]->spin( $post );
-		
+
 	}
-	
+
 //	function ajax_sample_permalink() {
 //		if ( ! wp_verify_nonce( $_POST['nonce'], $this->plugin_handle ) ) {
 //			return;
@@ -389,7 +389,7 @@ class MainWP_Spinner {
 //		$slug    = isset( $_POST['new_slug'] ) ? $_POST['new_slug'] : null;
 //		wp_die( get_sample_permalink_html( $post_id, $title, $slug ) );
 //	}
-	
+
 	public function filter_spin_text( $text ) {
 		$para = array();
 		$para['auto'] = 1; // auto spin from Poster extension
@@ -830,7 +830,7 @@ class MainWPSpinActivator {
 	protected $childEnabled = false;
 	protected $plugin_handle = 'mainwp-spinner';
 	protected $product_id = 'MainWP Spinner';
-	protected $software_version = '4.0';
+	protected $software_version = '4.0.1';
 
 	public function __construct() {
 		$this->mainwpMainActivated = false;
