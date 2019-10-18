@@ -21,9 +21,17 @@ jQuery( document ).ready(function ($) {
 			}
 		}
 
-		send_fields['action'] = "spin_post";
-		send_fields['post_id'] = jQuery( '#post_ID' ).val();
-
+		send_fields['action'] = "mainwp_spin_post";
+		send_fields['post_id'] = jQuery( '#post_ID' ).val();                
+		send_fields['title'] = jQuery( '#title' ).val() || '';
+                send_fields['excerpt'] = jQuery( '#excerpt' ).val() || '';
+                
+                if ( tinyMCE.activeEditor ) {
+                        send_fields['content'] = tinyMCE.activeEditor.getContent();
+                } else {                        
+                        send_fields['content'] = jQuery( '#content' ).val() || ''; 
+                }                
+                
 		jQuery.post( ajaxurl, send_fields, function ( obj ) {
 			jQuery( '#post_spin_article' ).removeAttr( 'disabled' );
 			jQuery( '#post_spin_article' ).next( '.spin_loading' ).hide();
@@ -42,16 +50,16 @@ jQuery( document ).ready(function ($) {
 				jQuery( '#content' ).val( obj.post.post_content );
 			}
 			jQuery( '#title' ).val( obj.post.post_title );
-			jQuery.post( ajaxurl, {
-				action: 'sample-permalink',
-				post_id: jQuery( '#post_ID' ).val(),
-				new_slug: obj.post.post_name,
-				new_title: obj.post.post_title,
-				samplepermalinknonce: $( '#samplepermalinknonce' ).val()
-				}, function (data) {
-					$( '#edit-slug-box' ).html( data );
-					$( '#view-post-btn' ).show();
-				});
+//			jQuery.post( ajaxurl, {
+//				action: 'mainwp_spin_sample-permalink',
+//				post_id: jQuery( '#post_ID' ).val(),
+//				new_slug: obj.post.post_name,
+//				new_title: obj.post.post_title,
+//				samplepermalinknonce: $( '#samplepermalinknonce' ).val()
+//				}, function (data) {
+//					$( '#edit-slug-box' ).html( data );
+//					$( '#view-post-btn' ).show();
+//				});
 		}, 'json');
 		return false;
 	};
@@ -62,14 +70,14 @@ jQuery( document ).ready(function ($) {
 		jQuery( '#mainwp-spinner-message-zone' ).removeClass( 'green yellow red' );
 		jQuery( this ).attr( 'disabled', 'disabled' );
 		jQuery( '#mainwp-spinner-message-zone' ).html( '<i class="notched circle loading icon"></i> ' + __ ( 'Working. Please wait...' ) ).show();
-		if ( typeof autosave_disable_buttons !== 'undefined' ) {
-			mainwpspin_autosave_and_spin();
-		} else {
-			window.wp.autosave.server.triggerSave();
-			setTimeout(function () {
+//		if ( typeof autosave_disable_buttons !== 'undefined' ) {
+//			mainwpspin_autosave_and_spin();
+//		} else {
+//			window.wp.autosave.server.triggerSave();
+//			setTimeout(function () {
 				mainwpspin_spin_article();
-			}, 5000);
-		}
+//			}, 5000);
+//		}
 		return false;
 	});
 

@@ -81,7 +81,7 @@ if ( ! class_exists( 'MainWP_Spin_Module_SC' ) ) :
 
 		public function spin_text( $text, $params = array() ) {
 			// auto: pass from Poster extension
-			if ( $params['auto'] || $this->main->get_option( 'sp_enable' ) == 0 ) {
+			if ( (isset($params['auto']) && $params['auto']) || $this->main->get_option( 'sp_enable' ) == 0 ) {
 				return $text;
 			}
 			$sc_wordscount = isset( $params['sc_wordscount'] ) ? $params['sc_wordscount'] : $this->main->get_option( 'sc_wordscount' );

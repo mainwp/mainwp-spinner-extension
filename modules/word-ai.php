@@ -74,7 +74,7 @@ if ( ! class_exists( 'MainWP_Word_AI' ) ) :
 
 		public function spin_text( $text, $params = array() ) {
 			// auto: pass from Poster extension
-			if ( $params['auto'] && $this->main->get_option( 'sp_enable' ) == 0 ) {
+			if ( isset($params['auto']) && $params['auto'] && $this->main->get_option( 'sp_enable' ) == 0 ) {
 				return $text;
 			}
 

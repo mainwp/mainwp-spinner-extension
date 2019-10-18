@@ -30,6 +30,8 @@ if ( ! class_exists( 'MainWP_Spin_Module_TBS' ) ) :
 		public function spin_post( $post, $spin_title = 0, $params = array() ) {
 			$post_id = $post->ID;
 			$success = 1;
+			$mess = '';
+			
 			try {
 				$spun_post_content = $this->spin_text( $post->post_content, $params );
 				$spun_post_title = ( 1 == $spin_title ) ? $this->spin_text( $post->post_title, $params ) : $this->main->unspin_text( $post->post_title );
@@ -68,7 +70,7 @@ if ( ! class_exists( 'MainWP_Spin_Module_TBS' ) ) :
 
 		public function spin_text( $text, $params = array() ) {
 			// auto: pass from Poster extension
-			if ( $params['auto'] && $this->main->get_option( 'sp_enable' ) == 0 ) {
+			if ( isset($params['auto']) && $params['auto'] && $this->main->get_option( 'sp_enable' ) == 0 ) {
 				return $text;
 			}
 			$bs_max_synonyms = isset( $params['bs_max_synonyms'] ) ? $params['bs_max_synonyms'] : $this->main->get_option( 'bs_max_synonyms' );

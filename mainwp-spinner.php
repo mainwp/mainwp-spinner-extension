@@ -76,17 +76,15 @@ class MainWP_Spinner {
 
 	public function admin_init() {
 		wp_enqueue_style( $this->plugin_handle . '-admin-css', $this->plugin_url . 'css/admin.css' );
-		wp_enqueue_script( $this->plugin_handle . '-admin-js', $this->plugin_url . 'js/admin.js' );
+		wp_enqueue_script( $this->plugin_handle . '-admin-js', $this->plugin_url . 'js/admin.js', array(), '1.0' );
 
 		$this->save_option();
-
-//		add_meta_box( 'mainwpspin', __( 'MainWP Spinner Options', 'mainwp-spinner' ), array( &$this, 'metabox' ), 'bulkpost', 'normal', 'high' );
-//		add_meta_box( 'mainwpspin', __( 'MainWP Spinner Options', 'mainwp-spinner' ), array( &$this, 'metabox' ), 'bulkpage', 'normal', 'high' );
 
         add_action( 'mainwp_bulkpost_edit', array( &$this, 'spinner_metabox' ), 10, 2 );
 
 		add_action( 'save_post', array( &$this, 'save_post' ), 9 );
-		add_action( 'wp_ajax_spin_post', array( &$this, 'ajax_spin_post' ) );
+		add_action( 'wp_ajax_mainwp_spin_post', array( &$this, 'ajax_spin_post' ) );
+//		add_action( 'wp_ajax_mainwp_spin_sample-permalink', array( &$this, 'ajax_sample_permalink' ) );
 		add_action( 'wp_ajax_spin_text', array( &$this, 'ajax_single_spin_text' ) );
 		add_action( 'wp_ajax_test_spin', array( &$this, 'ajax_test_spin' ) );
 
@@ -291,8 +289,10 @@ class MainWP_Spinner {
 	}
 
 	public function save_post( $post_id ) {
-		if ( ! wp_verify_nonce( $_POST['mainwpspin_nonce'], $this->plugin_handle ) ) {
-			return; }
+		if ( !isset($_POST['mainwpspin_nonce']) || ! wp_verify_nonce( $_POST['mainwpspin_nonce'], $this->plugin_handle ) ) {
+			return; 			
+		}
+		
 		if ( defined( 'DOING_AUTOSAVE' ) && DOING_AUTOSAVE ) {
 			return $post_id; }
 		if ( ! current_user_can( 'edit_post', $post_id ) ) {
@@ -354,21 +354,42 @@ class MainWP_Spinner {
 	}
 
 	public function ajax_spin_post() {
+		
 		if ( ! wp_verify_nonce( $_POST['nonce'], $this->plugin_handle ) ) {
 			return;
 		}
+		
 		$post_id = intval( $_POST['post_id'] );
+		
 		if ( $post_id < 1 ) {
 			return;
-		}
+		}	
+		
 		$post = get_post( $post_id );
+					
 		if ( ! $post ) {
 			return;
 		}
+
+		// to fix
+		$post->post_title = $_POST[ 'title' ];
+		$post->post_content = $_POST[ 'content' ];
+		
 		$sp = $_POST['sp_spinner'];
 		$this->modules[ $sp ]->spin( $post );
+		
 	}
-
+	
+//	function ajax_sample_permalink() {
+//		if ( ! wp_verify_nonce( $_POST['nonce'], $this->plugin_handle ) ) {
+//			return;
+//		}
+//		$post_id = isset( $_POST['post_id'] ) ? intval( $_POST['post_id'] ) : 0;
+//		$title   = isset( $_POST['new_title'] ) ? $_POST['new_title'] : '';
+//		$slug    = isset( $_POST['new_slug'] ) ? $_POST['new_slug'] : null;
+//		wp_die( get_sample_permalink_html( $post_id, $title, $slug ) );
+//	}
+	
 	public function filter_spin_text( $text ) {
 		$para = array();
 		$para['auto'] = 1; // auto spin from Poster extension
@@ -475,7 +496,7 @@ class MainWP_Spinner {
 
 	public function spin_text_bs( $text, $params = null ) {
 		// auto: pass from Poster extension
-		if ( $params['auto'] && $this->get_option( 'sp_enable' ) == 0 ) {
+		if ( ( isset($params['auto']) && $params['auto'] ) && $this->get_option( 'sp_enable' ) == 0 ) {
 			return $text;
 		}
 		$bs_max_synonyms = isset( $params['bs_max_synonyms'] ) ? $params['bs_max_synonyms'] : $this->get_option( 'bs_max_synonyms' );
@@ -542,7 +563,7 @@ class MainWP_Spinner {
 
 	public function spin_text_sc( $text, $params = null ) {
 		// auto: pass from Poster extension
-		if ( $params['auto'] || $this->get_option( 'sp_enable' ) == 0 ) {
+		if ( (isset($params['auto']) && $params['auto']) || $this->get_option( 'sp_enable' ) == 0 ) {
 			return $text;
 		}
 
@@ -616,7 +637,7 @@ class MainWP_Spinner {
 
 	public function filter_post_slug( $data, $postarr ) {
 		if ( $postarr['ID'] ) {
-			if ( wp_verify_nonce( $_POST['mainwpspin_nonce'], $this->plugin_handle ) ) {
+			if ( isset($_POST['mainwpspin_nonce']) && wp_verify_nonce( $_POST['mainwpspin_nonce'], $this->plugin_handle ) ) {
 				// we are editing post
 				if ( wp_verify_nonce( $_POST['mainwp_respin_post'], $this->plugin_handle . '-respin' ) ) {
 					update_post_meta( $postarr['ID'], '_mainwp_spinner_spin_content', $this->generate_spin_data( $data['post_content'] ) );
