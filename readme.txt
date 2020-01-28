@@ -1,5 +1,5 @@
-=== MainWP Spinner Extension ===
-Plugin Name: MainWP Spinner Extension
+=== MainWP Spinner Extension - Retired Extension and Unsupported ===
+Plugin Name: MainWP Spinner Extension (Retired)
 Plugin URI: https://mainwp.com
 Description: MainWP Spinner Extension allows words to spun {|} when when adding articles and posts to your blogs. Requires the installation of MainWP Main Plugin.
 Version: 4.0.1
@@ -13,6 +13,9 @@ Author URI: https://mainwp.com
 3. Activate the Spinner Extension plugin through the 'Plugins' menu in WordPress
 
 == Changelog ==
+
+= 1-28-2020 =
+* Extension retired
 
 = 4.0.1 - 10-18-2019 =
 * Fixed: issue with generating spintax
